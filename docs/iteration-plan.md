@@ -150,8 +150,8 @@ Iter 0 (Ereignis-Modell, Auth, Dashboard).
   - Frontend: PersonForm validates required, PersonGroupForm validates member-list non-empty.
 - **Doku**:
   - ADR `0011-three-audience-entities.md` (begründet warum drei Tabellen statt einer abstrahierten).
-  - ADR `0012-pipeline-spring-events-async.md`.
-  - ADR `0013-json-schema-validation-llm.md`.
+  - ADR `0012-pipeline-synchronous-with-fallback.md` (Phase-1: synchron + Fallback-Topic; Async folgt mit Provider-Refactor).
+  - ADR `0013-llm-json-graceful-parsing.md`.
 
 ### Edge Cases
 - LLM antwortet mit malformed JSON → Retry 1×, dann Pipeline-Fehler, Ereignis bleibt im review_status=pending.
@@ -417,7 +417,7 @@ Iter 0–6.
 |------|--------|-------|
 | 0 | erledigt | 2026-05-12 |
 | 1 | erledigt | 2026-05-12 |
-| 2 | pending | – |
+| 2 | erledigt | 2026-05-12 |
 | 3 | pending | – |
 | 4 | pending | – |
 | 5 | pending | – |
