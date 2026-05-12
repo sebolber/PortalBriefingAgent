@@ -1,10 +1,14 @@
 package app.briefingagent.ereignis;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -131,5 +135,97 @@ class EreignisControllerTest {
                         .content("{\"text\":\"x\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Text must not be empty"));
+    }
+
+    @Test
+    void post_audio_creates_audio_ereignis() throws Exception {
+        UserAccount author = TestEntities.withId(
+                new UserAccount("demo", "x", "Demo", "demo@example.invalid"), demoUserId);
+        Topic topic = TestEntities.withRandomId(new Topic(author, "My Notes", "persona"));
+        Ereignis ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.AUDIO));
+        ereignis.setTranscriptText("Hallo Welt");
+        ereignis.setTranscriptSource(TranscriptSource.WHISPER);
+        ereignis.setLanguage("de");
+        ereignis.setDurationSeconds(5);
+        Summary summary = TestEntities.withRandomId(
+                Summary.forTopic(ereignis, topic, "## Mock summary\n\nbody"));
+
+        when(ereignisService.captureAudio(eq(demoUserId), any(), eq("audio/webm"),
+                eq("clip.webm"), anyLong())).thenReturn(ereignis);
+        when(summaryRepository.findByEreignisOrderByCreatedAtAsc(ereignis)).thenReturn(List.of(summary));
+
+        org.springframework.mock.web.MockMultipartFile audio =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "audio", "clip.webm", "audio/webm", new byte[]{1, 2, 3, 4});
+
+        mockMvc.perform(multipart("/api/ereignisse/audio")
+                        .file(audio)
+                        .with(user(demo))
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sourceType").value("audio"))
+                .andExpect(jsonPath("$.transcript").value("Hallo Welt"))
+                .andExpect(jsonPath("$.summaries[0].summaryText").value("## Mock summary\n\nbody"));
+    }
+
+    @Test
+    void post_audio_returns_400_when_no_file() throws Exception {
+        org.springframework.mock.web.MockMultipartFile empty =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "audio", "empty.webm", "audio/webm", new byte[0]);
+
+        mockMvc.perform(multipart("/api/ereignisse/audio")
+                        .file(empty)
+                        .with(user(demo))
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+
+        verify(ereignisService, never())
+                .captureAudio(any(), any(), any(), any(), anyLong());
+    }
+
+    @Test
+    void post_audio_returns_415_for_unsupported_mime() throws Exception {
+        org.springframework.mock.web.MockMultipartFile bad =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "audio", "video.mp4", "video/mp4", new byte[]{1, 2});
+
+        mockMvc.perform(multipart("/api/ereignisse/audio")
+                        .file(bad)
+                        .with(user(demo))
+                        .with(csrf()))
+                .andExpect(status().isUnsupportedMediaType());
+
+        verify(ereignisService, never())
+                .captureAudio(any(), any(), any(), any(), anyLong());
+    }
+
+    @Test
+    void post_audio_returns_401_when_anonymous() throws Exception {
+        org.springframework.mock.web.MockMultipartFile audio =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "audio", "clip.webm", "audio/webm", new byte[]{1, 2});
+
+        mockMvc.perform(multipart("/api/ereignisse/audio")
+                        .file(audio)
+                        .with(csrf()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void post_audio_returns_502_when_service_reports_bad_gateway() throws Exception {
+        when(ereignisService.captureAudio(eq(demoUserId), any(), any(), any(), anyLong()))
+                .thenThrow(new ApiException(HttpStatus.BAD_GATEWAY, "STT down"));
+
+        org.springframework.mock.web.MockMultipartFile audio =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "audio", "clip.webm", "audio/webm", new byte[]{1, 2});
+
+        mockMvc.perform(multipart("/api/ereignisse/audio")
+                        .file(audio)
+                        .with(user(demo))
+                        .with(csrf()))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.title").value("STT down"));
     }
 }

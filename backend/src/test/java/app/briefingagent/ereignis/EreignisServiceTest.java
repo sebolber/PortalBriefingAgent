@@ -14,6 +14,7 @@ import app.briefingagent.common.TestEntities;
 import app.briefingagent.llm.LlmClient;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
+import app.briefingagent.stt.SttProviderClient;
 import app.briefingagent.summary.Summary;
 import app.briefingagent.summary.SummaryRepository;
 import app.briefingagent.topic.DefaultTopicProvider;
@@ -44,6 +45,8 @@ class EreignisServiceTest {
     private DefaultTopicProvider defaultTopicProvider;
     @Mock
     private LlmClient llmClient;
+    @Mock
+    private SttProviderClient sttClient;
 
     @InjectMocks
     private EreignisService service;
@@ -150,5 +153,103 @@ class EreignisServiceTest {
 
         verify(ereignisRepository, times(1))
                 .findByAuthorAndCreatedAtAfterOrderByCreatedAtDesc(eq(author), any(), any());
+    }
+
+    @Test
+    void capture_audio_persists_ereignis_with_whisper_transcript() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        when(defaultTopicProvider.ensureDefaultTopic(author)).thenReturn(defaultTopic);
+        when(sttClient.transcribe(any(), eq("audio/webm"), eq("capture.webm")))
+                .thenReturn(new app.briefingagent.stt.TranscriptionResult(
+                        "Heute Workshop besprochen", "de", 75));
+        when(llmClient.complete(any(LlmRequest.class))).thenReturn("## Mock summary");
+
+        Ereignis result = service.captureAudio(
+                author.getId(),
+                new java.io.ByteArrayInputStream(new byte[]{1, 2, 3, 4}),
+                "audio/webm",
+                "capture.webm",
+                4L);
+
+        assertThat(result.getSourceType()).isEqualTo(EreignisSourceType.AUDIO);
+        assertThat(result.getTranscriptText()).isEqualTo("Heute Workshop besprochen");
+        assertThat(result.getTranscriptSource()).isEqualTo(TranscriptSource.WHISPER);
+        assertThat(result.getLanguage()).isEqualTo("de");
+        assertThat(result.getDurationSeconds()).isEqualTo(75);
+        assertThat(result.isTruncatedAtLimit()).isFalse();
+    }
+
+    @Test
+    void capture_audio_marks_truncated_when_duration_hits_hard_cap() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        when(defaultTopicProvider.ensureDefaultTopic(author)).thenReturn(defaultTopic);
+        when(sttClient.transcribe(any(), any(), any()))
+                .thenReturn(new app.briefingagent.stt.TranscriptionResult(
+                        "long talk", "de", EreignisLimits.AUDIO_HARD_CAP_SECONDS));
+        when(llmClient.complete(any(LlmRequest.class))).thenReturn("ok");
+
+        Ereignis result = service.captureAudio(author.getId(),
+                new java.io.ByteArrayInputStream(new byte[]{1}),
+                "audio/webm", "x.webm", 1L);
+
+        assertThat(result.isTruncatedAtLimit()).isTrue();
+    }
+
+    @Test
+    void capture_audio_rejects_zero_byte_payload() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+
+        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+                new java.io.ByteArrayInputStream(new byte[0]),
+                "audio/webm", "x.webm", 0L))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        verify(sttClient, never()).transcribe(any(), any(), any());
+    }
+
+    @Test
+    void capture_audio_rejects_unsupported_mime_type() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+
+        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+                new java.io.ByteArrayInputStream(new byte[]{1}),
+                "video/mp4", "x.mp4", 1L))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+
+        verify(sttClient, never()).transcribe(any(), any(), any());
+    }
+
+    @Test
+    void capture_audio_propagates_whisper_failure_as_502() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        when(sttClient.transcribe(any(), any(), any()))
+                .thenThrow(new ApiException(HttpStatus.BAD_GATEWAY, "STT down"));
+
+        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+                new java.io.ByteArrayInputStream(new byte[]{1}),
+                "audio/webm", "x.webm", 1L))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.BAD_GATEWAY);
+
+        verify(ereignisRepository, never()).save(any());
+    }
+
+    @Test
+    void capture_audio_rejects_blank_transcript_with_422() {
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        when(sttClient.transcribe(any(), any(), any()))
+                .thenReturn(new app.briefingagent.stt.TranscriptionResult("   ", "de", 12));
+
+        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+                new java.io.ByteArrayInputStream(new byte[]{1}),
+                "audio/webm", "x.webm", 1L))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }
