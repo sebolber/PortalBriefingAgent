@@ -1,0 +1,21 @@
+# Test profile used by @SpringBootTest slices that do not boot the full app.
+# Repository / integration tests use Testcontainers (see *IT classes), so they
+# override the datasource at runtime. This profile suppresses Flyway and JPA
+# bootstrap for unit-style tests that mock the persistence layer.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+
+briefingagent:
+  llm:
+    mock:
+      enabled: true
+
+logging:
+  level:
+    root: WARN
+    app.briefingagent: INFO

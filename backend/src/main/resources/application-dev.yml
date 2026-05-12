@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/briefing_agent
+    username: briefing_agent
+    password: briefing_agent
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    root: INFO
+    app.briefingagent: DEBUG
