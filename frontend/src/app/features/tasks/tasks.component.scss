@@ -1,0 +1,119 @@
+.tasks {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.notice {
+  color: var(--color-status-success);
+  margin: 0;
+}
+
+.error {
+  color: var(--color-status-error);
+  margin: 0;
+}
+
+.create-form form {
+  display: grid;
+  gap: var(--space-xs);
+
+  label {
+    margin-top: var(--space-xs);
+    font-weight: 600;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.task-row {
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-surface-border);
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .status {
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    background-color: var(--color-surface-border);
+    color: var(--color-text-secondary);
+  }
+
+  .due {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .description {
+    margin: var(--space-xs) 0;
+    color: var(--color-text-secondary);
+  }
+
+  .row-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+
+    .link {
+      background: transparent;
+      border: none;
+      color: var(--color-brand-primary);
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .link.danger {
+      color: var(--color-status-error);
+    }
+  }
+
+  &[data-status='done'] .meta strong,
+  &[data-status='dropped'] .meta strong {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+  }
+
+  &[data-status='in_progress'] .status {
+    background-color: rgba(0, 110, 199, 0.12);
+    color: var(--color-brand-primary);
+  }
+
+  &[data-status='done'] .status {
+    background-color: rgba(29, 125, 79, 0.12);
+    color: var(--color-status-success);
+  }
+}
