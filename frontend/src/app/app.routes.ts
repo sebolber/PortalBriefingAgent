@@ -54,6 +54,12 @@ export const routes: Routes = [
         title: 'Aufgaben · Briefing Agent',
       },
       {
+        path: 'configuration',
+        loadComponent: () =>
+          import('./features/config/configuration.component').then((m) => m.ConfigurationComponent),
+        title: 'Konfiguration · Briefing Agent',
+      },
+      {
         path: 'review/:ereignisId',
         loadComponent: () =>
           import('./features/review/review.component').then((m) => m.ReviewComponent),
