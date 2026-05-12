@@ -13,7 +13,7 @@ Legende DoD: messbare Akzeptanzkriterien. Edge Cases werden in der jeweiligen It
 
 ## Querschnittsregeln (gelten für alle Iterationen)
 
-- **Naming**: Im Code, in Konfig, in Tests, in Doku darf das Wort „adesso" (case-insensitive) NIRGENDS auftauchen. Pro Iter Phase C: Naming-Audit mit `grep -ri adesso`.
+- **Naming**: Im Code, in Konfig, in Tests, in Doku darf der firmenbezeichnende Begriff aus dem Designkontext (case-insensitive, in der Spec genannt) NIRGENDS auftauchen. Pro Iter Phase C: Naming-Audit gegen genau diesen Begriff per `grep`.
 - **Sicherheit > Langlebigkeit > Performance > Nachhaltigkeit > Usability** (strikte Reihenfolge bei Konflikten).
 - **TDD**: Tests werden NICHT geändert, um Code grün zu bekommen.
 - **ADRs** unter `docs/adr/NNNN-kurztitel.md` für jede nicht-triviale Entscheidung.
@@ -73,7 +73,7 @@ Legende DoD: messbare Akzeptanzkriterien. Edge Cases werden in der jeweiligen It
 - `npm run build`, `npm run lint`, `npm run test -- --watch=false --browsers=ChromeHeadlessNoSandbox` grün.
 - Manueller E2E: Login → Text eingeben → Speichern → Dashboard zeigt das Ereignis + Mock-Summary.
 - README erklärt Setup in unter 10 Minuten reproduzierbar.
-- Naming-Audit liefert 0 Treffer für „adesso".
+- Naming-Audit gegen den verbotenen Begriff liefert 0 Treffer.
 - Tag `iter-0-complete` gesetzt.
 
 ### Abhängigkeiten
@@ -405,7 +405,7 @@ Iter 0–6.
 - Alle Iterationen 0–7 abgeschlossen, jeweils mit Tag.
 - `./mvnw clean verify` grün (Backend).
 - `npm run build && npm run lint && npm test -- --watch=false` grün (Frontend).
-- `grep -ri --include='*.java' --include='*.ts' --include='*.html' --include='*.scss' --include='*.css' --include='*.sql' --include='*.yml' --include='*.yaml' --include='*.json' --include='*.md' adesso .` liefert genau 0 Treffer (außer in `docs/briefing-agent-phase1-spec.md`, das unberührt bleibt).
+- Die rekursive `grep`-Suche nach dem firmenbezeichnenden Begriff aus dem Designkontext liefert über alle Source-, Konfig-, Test- und Dokumentationsdateien hinweg **genau 0 Treffer** (außer in `docs/briefing-agent-phase1-spec.md`, das laut Auftrag unberührt bleibt).
 - README im Repo-Root setzt Setup, Build, Run, Test-Suite reproduzierbar in unter 10 Minuten.
 - `docs/phase-1-completion-report.md` listet umgesetzte Features, ADRs, Edge-Cases, offene Phase-2-Punkte.
 
@@ -415,7 +415,7 @@ Iter 0–6.
 
 | Iter | Status | Datum |
 |------|--------|-------|
-| 0 | pending | – |
+| 0 | erledigt | 2026-05-12 |
 | 1 | pending | – |
 | 2 | pending | – |
 | 3 | pending | – |
