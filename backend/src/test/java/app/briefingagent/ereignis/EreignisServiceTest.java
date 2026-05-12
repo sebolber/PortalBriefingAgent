@@ -9,11 +9,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import app.briefingagent.audience.AudienceQueryService;
 import app.briefingagent.common.ApiException;
 import app.briefingagent.common.TestEntities;
 import app.briefingagent.llm.LlmClient;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
+import app.briefingagent.pipeline.AudienceClassificationService;
+import app.briefingagent.pipeline.SummaryGenerationService;
 import app.briefingagent.stt.SttProviderClient;
 import app.briefingagent.summary.Summary;
 import app.briefingagent.summary.SummaryRepository;
@@ -47,6 +50,12 @@ class EreignisServiceTest {
     private LlmClient llmClient;
     @Mock
     private SttProviderClient sttClient;
+    @Mock
+    private AudienceQueryService audienceQueryService;
+    @Mock
+    private AudienceClassificationService classificationService;
+    @Mock
+    private SummaryGenerationService summaryGenerationService;
 
     @InjectMocks
     private EreignisService service;

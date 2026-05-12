@@ -43,6 +43,9 @@ public class DashboardController {
                                         s.getId().toString(),
                                         s.getAudienceType().dbValue(),
                                         audienceName(s),
+                                        s.getClassificationConfidence() == null
+                                                ? null : s.getClassificationConfidence().dbValue(),
+                                        s.getClassificationReasoning(),
                                         excerpt(s.getSummaryText())))
                                 .toList()))
                 .toList();
@@ -80,6 +83,8 @@ public class DashboardController {
             String id,
             String audienceType,
             String audienceName,
+            String confidence,
+            String reasoning,
             String summaryExcerpt) {
     }
 }

@@ -1,11 +1,17 @@
 package app.briefingagent.ereignis;
 
+import app.briefingagent.audience.AudienceQueryService;
+import app.briefingagent.audience.AudienceRef;
 import app.briefingagent.common.ApiException;
 import app.briefingagent.llm.LlmClient;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
+import app.briefingagent.pipeline.AudienceClassificationService;
+import app.briefingagent.pipeline.AudienceMatch;
+import app.briefingagent.pipeline.SummaryGenerationService;
 import app.briefingagent.stt.SttProviderClient;
 import app.briefingagent.stt.TranscriptionResult;
+import app.briefingagent.summary.ClassificationConfidence;
 import app.briefingagent.summary.Summary;
 import app.briefingagent.summary.SummaryRepository;
 import app.briefingagent.topic.DefaultTopicProvider;
@@ -39,19 +45,28 @@ public class EreignisService {
     private final DefaultTopicProvider defaultTopicProvider;
     private final LlmClient llmClient;
     private final SttProviderClient sttClient;
+    private final AudienceQueryService audienceQueryService;
+    private final AudienceClassificationService classificationService;
+    private final SummaryGenerationService summaryGenerationService;
 
     public EreignisService(EreignisRepository ereignisRepository,
                            SummaryRepository summaryRepository,
                            UserAccountRepository userRepository,
                            DefaultTopicProvider defaultTopicProvider,
                            LlmClient llmClient,
-                           SttProviderClient sttClient) {
+                           SttProviderClient sttClient,
+                           AudienceQueryService audienceQueryService,
+                           AudienceClassificationService classificationService,
+                           SummaryGenerationService summaryGenerationService) {
         this.ereignisRepository = ereignisRepository;
         this.summaryRepository = summaryRepository;
         this.userRepository = userRepository;
         this.defaultTopicProvider = defaultTopicProvider;
         this.llmClient = llmClient;
         this.sttClient = sttClient;
+        this.audienceQueryService = audienceQueryService;
+        this.classificationService = classificationService;
+        this.summaryGenerationService = summaryGenerationService;
     }
 
     @Transactional
@@ -71,13 +86,7 @@ public class EreignisService {
         ereignis.setTranscriptSource(TranscriptSource.MANUAL);
         ereignis.setCharacterCount(trimmed.length());
         ereignisRepository.save(ereignis);
-
-        Topic defaultTopic = defaultTopicProvider.ensureDefaultTopic(author);
-        String summaryText = llmClient.complete(new LlmRequest(
-                LlmPurpose.SUMMARY_GENERATION,
-                SYSTEM_PROMPT_SUMMARY,
-                trimmed));
-        summaryRepository.save(Summary.forTopic(ereignis, defaultTopic, summaryText));
+        runPipeline(author, ereignis, trimmed);
         return ereignis;
     }
 
@@ -116,14 +125,27 @@ public class EreignisService {
         }
         ereignis.setCharacterCount(result.text().length());
         ereignisRepository.save(ereignis);
-
-        Topic defaultTopic = defaultTopicProvider.ensureDefaultTopic(author);
-        String summaryText = llmClient.complete(new LlmRequest(
-                LlmPurpose.SUMMARY_GENERATION,
-                SYSTEM_PROMPT_SUMMARY,
-                result.text()));
-        summaryRepository.save(Summary.forTopic(ereignis, defaultTopic, summaryText));
+        runPipeline(author, ereignis, result.text());
         return ereignis;
+    }
+
+    private void runPipeline(UserAccount author, Ereignis ereignis, String transcript) {
+        List<AudienceRef> audiences = audienceQueryService.allFor(author);
+        List<AudienceMatch> matches = classificationService.classify(transcript, audiences);
+        if (matches.isEmpty()) {
+            Topic fallback = defaultTopicProvider.ensureDefaultTopic(author);
+            String body = llmClient.complete(new LlmRequest(
+                    LlmPurpose.SUMMARY_GENERATION,
+                    SYSTEM_PROMPT_SUMMARY,
+                    transcript));
+            Summary fallbackSummary = Summary.forTopic(ereignis, fallback, body);
+            fallbackSummary.setClassificationConfidence(ClassificationConfidence.LOW);
+            fallbackSummary.setClassificationReasoning(
+                    "Keine relevante Audience erkannt — Fallback auf das persönliche Topic.");
+            summaryRepository.save(fallbackSummary);
+            return;
+        }
+        summaryGenerationService.generate(ereignis, matches);
     }
 
     @Transactional(readOnly = true)
