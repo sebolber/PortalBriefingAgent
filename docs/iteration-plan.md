@@ -103,9 +103,9 @@ Sehr groß: Skelett, Auth, JPA-Setup, erstes Migrations-Set, Angular-Bootstrap. 
   - Backend-Unit: MIME-Validierung, Größe > Hard-Cap, leeres File, ungültiger Content-Type.
   - Frontend: CaptureAudioComponent mit gemocktem MediaRecorder-Wrapper-Service.
 - **Doku**:
-  - ADR `0008-audio-no-disk-persistence.md`.
-  - ADR `0009-rest-client-over-spring-ai.md`.
-  - ADR `0010-mime-whitelist.md`.
+  - ADR `0009-audio-no-disk-persistence.md`.
+  - ADR `0010-audio-mime-whitelist.md`.
+  - (Die RestClient/Spring-AI-Begründung steht bereits in ADR `0007-no-spring-ai.md` aus Iter 0.)
 
 ### Edge Cases (mit Tests)
 - Mikrofon abgelehnt → User-Fehlermeldung, kein Crash.
@@ -416,7 +416,7 @@ Iter 0–6.
 | Iter | Status | Datum |
 |------|--------|-------|
 | 0 | erledigt | 2026-05-12 |
-| 1 | pending | – |
+| 1 | erledigt | 2026-05-12 |
 | 2 | pending | – |
 | 3 | pending | – |
 | 4 | pending | – |
