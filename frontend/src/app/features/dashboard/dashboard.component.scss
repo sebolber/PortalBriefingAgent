@@ -75,6 +75,13 @@
   background-color: var(--color-surface-muted);
 }
 
+.summary-meta {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
 .audience {
   display: inline-block;
   padding: 2px var(--space-xs);
@@ -83,7 +90,32 @@
   color: var(--color-brand-primary);
   font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: var(--space-xs);
+}
+
+.confidence {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-border);
+  color: var(--color-text-secondary);
+
+  &[data-level='high'] {
+    background-color: rgba(29, 125, 79, 0.12);
+    color: var(--color-status-success);
+  }
+
+  &[data-level='medium'] {
+    background-color: rgba(182, 113, 30, 0.12);
+    color: var(--color-status-warning);
+  }
+}
+
+.reasoning {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .summary-text {

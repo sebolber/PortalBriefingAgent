@@ -43,6 +43,8 @@ describe('DashboardComponent', () => {
               id: 's1',
               audienceType: 'topic',
               audienceName: 'My Notes',
+              confidence: 'high',
+              reasoning: 'Workshop direkt adressiert',
               summaryExcerpt: 'Mock-Summary',
             },
           ],

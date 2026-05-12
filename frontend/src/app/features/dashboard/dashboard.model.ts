@@ -2,6 +2,8 @@ export interface DashboardSummary {
   readonly id: string;
   readonly audienceType: 'person' | 'persongroup' | 'topic';
   readonly audienceName: string;
+  readonly confidence: 'low' | 'medium' | 'high' | null;
+  readonly reasoning: string | null;
   readonly summaryExcerpt: string | null;
 }
 

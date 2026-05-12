@@ -39,7 +39,15 @@
               <ul class="summary-list">
                 @for (summary of entry.summaries; track summary.id) {
                   <li class="summary">
-                    <span class="audience">{{ summary.audienceName }}</span>
+                    <div class="summary-meta">
+                      <span class="audience">{{ summary.audienceName }}</span>
+                      @if (summary.confidence) {
+                        <span class="confidence" [attr.data-level]="summary.confidence">{{ summary.confidence }}</span>
+                      }
+                    </div>
+                    @if (summary.reasoning) {
+                      <p class="reasoning">{{ summary.reasoning }}</p>
+                    }
                     <p class="summary-text">{{ summary.summaryExcerpt }}</p>
                   </li>
                 }

@@ -41,6 +41,12 @@ export const routes: Routes = [
           import('./features/ereignis/capture-audio.component').then((m) => m.CaptureAudioComponent),
         title: 'Audio-Notiz · Briefing Agent',
       },
+      {
+        path: 'audiences',
+        loadComponent: () =>
+          import('./features/audiences/audiences.component').then((m) => m.AudiencesComponent),
+        title: 'Audiences · Briefing Agent',
+      },
     ],
   },
   {
