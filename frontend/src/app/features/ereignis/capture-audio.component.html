@@ -1,0 +1,64 @@
+<section class="capture">
+  <header class="page-header">
+    <h1>Audio-Notiz aufnehmen</h1>
+    <a routerLink="/dashboard" class="back-link">Zurück zum Dashboard</a>
+  </header>
+
+  @if (result(); as response) {
+    <article class="success surface-card" data-testid="result">
+      <h2>Ereignis gespeichert</h2>
+      <p class="status">Sprache: {{ response.transcript ? 'erkannt' : 'unbekannt' }}</p>
+      @if (response.transcript) {
+        <h3>Transkript</h3>
+        <blockquote class="transcript">{{ response.transcript }}</blockquote>
+      }
+      @if (response.summaries.length > 0) {
+        <h3>Generierte Summary</h3>
+        <ul class="summary-list">
+          @for (summary of response.summaries; track summary.id) {
+            <li class="summary">
+              <span class="audience">{{ summary.audienceName }}</span>
+              <pre class="summary-text">{{ summary.summaryText }}</pre>
+            </li>
+          }
+        </ul>
+      }
+      <div class="actions">
+        <button type="button" class="brand-button" (click)="reset()">Weitere Aufnahme</button>
+        <a routerLink="/dashboard" class="secondary">Zum Dashboard</a>
+      </div>
+    </article>
+  } @else {
+    <article class="surface-card recorder">
+      <p class="timer" aria-live="polite" data-testid="timer">{{ elapsedLabel() }}</p>
+
+      @if (softWarning()) {
+        <p class="soft-warning" role="alert">{{ softWarnLabel }}</p>
+      }
+
+      @if (recorderError(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+
+      @if (uploadError(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+
+      <div class="controls">
+        @if (recorderState() === 'recording') {
+          <button type="button" class="brand-button stop" (click)="stopRecording()" [disabled]="uploading()">
+            Aufnahme stoppen
+          </button>
+        } @else if (uploading()) {
+          <button type="button" class="brand-button" disabled>
+            Hochladen…
+          </button>
+        } @else {
+          <button type="button" class="brand-button" (click)="startRecording()">
+            Aufnahme starten
+          </button>
+        }
+      </div>
+    </article>
+  }
+</section>

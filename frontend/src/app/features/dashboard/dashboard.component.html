@@ -8,7 +8,7 @@
         <p class="window-hint">Letzte {{ response.windowDays }} Tage</p>
       }
     </div>
-    <a routerLink="/capture" class="brand-button">Neues Ereignis</a>
+    <a routerLink="/capture/text" class="brand-button">Neues Ereignis</a>
   </header>
 
   @if (state() === 'loading') {
@@ -22,7 +22,7 @@
     @if (response.ereignisse.length === 0) {
       <div class="empty surface-card">
         <p>Noch keine Ereignisse erfasst.</p>
-        <a routerLink="/capture" class="brand-button">Erstes Ereignis erfassen</a>
+        <a routerLink="/capture/text" class="brand-button">Erstes Ereignis erfassen</a>
       </div>
     } @else {
       <ul class="entry-list" data-testid="entries">

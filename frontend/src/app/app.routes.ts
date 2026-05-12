@@ -26,9 +26,20 @@ export const routes: Routes = [
       },
       {
         path: 'capture',
+        pathMatch: 'full',
+        redirectTo: 'capture/text',
+      },
+      {
+        path: 'capture/text',
         loadComponent: () =>
           import('./features/ereignis/capture-text.component').then((m) => m.CaptureTextComponent),
-        title: 'Neues Ereignis · Briefing Agent',
+        title: 'Text-Notiz · Briefing Agent',
+      },
+      {
+        path: 'capture/audio',
+        loadComponent: () =>
+          import('./features/ereignis/capture-audio.component').then((m) => m.CaptureAudioComponent),
+        title: 'Audio-Notiz · Briefing Agent',
       },
     ],
   },

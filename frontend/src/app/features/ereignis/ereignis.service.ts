@@ -13,4 +13,10 @@ export class EreignisService {
   captureText(text: string): Observable<EreignisResponse> {
     return this.http.post<EreignisResponse>(`${this.baseUrl}/api/ereignisse`, { text });
   }
+
+  captureAudio(blob: Blob, filename: string): Observable<EreignisResponse> {
+    const form = new FormData();
+    form.append('audio', blob, filename);
+    return this.http.post<EreignisResponse>(`${this.baseUrl}/api/ereignisse/audio`, form);
+  }
 }
