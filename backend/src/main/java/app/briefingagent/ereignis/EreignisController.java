@@ -9,9 +9,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +71,33 @@ public class EreignisController {
         List<Summary> summaries = summaryRepository.findByEreignisOrderByCreatedAtAsc(ereignis);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(EreignisResponse.from(ereignis, summaries));
+    }
+
+    @GetMapping("/{id}")
+    public EreignisResponse get(@PathVariable UUID id) {
+        Ereignis ereignis = ereignisService.getOwn(currentAuthor.requireUserId(), id);
+        return EreignisResponse.from(ereignis,
+                summaryRepository.findByEreignisOrderByCreatedAtAsc(ereignis));
+    }
+
+    @PatchMapping("/{id}/transcript")
+    public EreignisResponse editTranscript(@PathVariable UUID id,
+                                           @Valid @RequestBody TranscriptEditRequest body) {
+        Ereignis ereignis = ereignisService.editTranscript(
+                currentAuthor.requireUserId(), id, body.transcript());
+        return EreignisResponse.from(ereignis,
+                summaryRepository.findByEreignisOrderByCreatedAtAsc(ereignis));
+    }
+
+    @PostMapping("/{id}/release")
+    public EreignisResponse release(@PathVariable UUID id) {
+        Ereignis ereignis = ereignisService.release(currentAuthor.requireUserId(), id);
+        return EreignisResponse.from(ereignis,
+                summaryRepository.findByEreignisOrderByCreatedAtAsc(ereignis));
+    }
+
+    public record TranscriptEditRequest(
+            @NotNull @Size(min = 1, max = EreignisLimits.TEXT_HARD_CAP_CHARS) String transcript) {
     }
 
     public record CaptureTextRequest(

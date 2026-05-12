@@ -249,6 +249,56 @@ class EreignisServiceTest {
     }
 
     @Test
+    void edit_transcript_updates_text_and_character_count() {
+        Ereignis ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.AUDIO));
+        ereignis.setTranscriptText("alt");
+        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+        when(ereignisRepository.save(any(Ereignis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Ereignis updated = service.editTranscript(author.getId(), ereignis.getId(), "  neu Text  ");
+
+        assertThat(updated.getTranscriptText()).isEqualTo("neu Text");
+        assertThat(updated.getCharacterCount()).isEqualTo(8);
+    }
+
+    @Test
+    void edit_transcript_rejects_when_already_released() {
+        Ereignis ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.TEXT));
+        ereignis.setReviewStatus(ReviewStatus.RELEASED);
+        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+
+        assertThatThrownBy(() -> service.editTranscript(author.getId(), ereignis.getId(), "x"))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void edit_transcript_rejects_other_authors_ereignis() {
+        UserAccount stranger = TestEntities.withRandomId(
+                new UserAccount("other", "x", "Other", "other@example.invalid"));
+        Ereignis ereignis = TestEntities.withRandomId(new Ereignis(stranger, EreignisSourceType.TEXT));
+        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+
+        assertThatThrownBy(() -> service.editTranscript(author.getId(), ereignis.getId(), "x"))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void release_sets_review_status_to_released() {
+        Ereignis ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.TEXT));
+        ereignis.setReviewStatus(ReviewStatus.PENDING);
+        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+        when(ereignisRepository.save(any(Ereignis.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Ereignis released = service.release(author.getId(), ereignis.getId());
+
+        assertThat(released.getReviewStatus()).isEqualTo(ReviewStatus.RELEASED);
+    }
+
+    @Test
     void capture_audio_rejects_blank_transcript_with_422() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
         when(sttClient.transcribe(any(), any(), any()))

@@ -149,6 +149,47 @@ public class EreignisService {
     }
 
     @Transactional(readOnly = true)
+    public Ereignis getOwn(UUID authorId, UUID ereignisId) {
+        return loadOwn(authorId, ereignisId);
+    }
+
+    @Transactional
+    public Ereignis editTranscript(UUID authorId, UUID ereignisId, String text) {
+        Ereignis ereignis = loadOwn(authorId, ereignisId);
+        if (ereignis.getReviewStatus() == ReviewStatus.RELEASED) {
+            throw new ApiException(HttpStatus.CONFLICT,
+                    "Released ereignis transcripts are read-only");
+        }
+        String trimmed = text == null ? "" : text.strip();
+        if (trimmed.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Transcript must not be empty");
+        }
+        if (trimmed.length() > EreignisLimits.TEXT_HARD_CAP_CHARS) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Transcript exceeds hard cap of " + EreignisLimits.TEXT_HARD_CAP_CHARS + " characters");
+        }
+        ereignis.setTranscriptText(trimmed);
+        ereignis.setCharacterCount(trimmed.length());
+        return ereignisRepository.save(ereignis);
+    }
+
+    @Transactional
+    public Ereignis release(UUID authorId, UUID ereignisId) {
+        Ereignis ereignis = loadOwn(authorId, ereignisId);
+        ereignis.setReviewStatus(ReviewStatus.RELEASED);
+        return ereignisRepository.save(ereignis);
+    }
+
+    private Ereignis loadOwn(UUID authorId, UUID ereignisId) {
+        Ereignis e = ereignisRepository.findById(ereignisId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Ereignis not found"));
+        if (!e.getAuthor().getId().equals(authorId)) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Ereignis not found");
+        }
+        return e;
+    }
+
+    @Transactional(readOnly = true)
     public List<Ereignis> recent(UUID authorId, int days) {
         UserAccount author = loadAuthor(authorId);
         Instant since = Instant.now().minus(Duration.ofDays(days));

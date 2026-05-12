@@ -418,7 +418,7 @@ Iter 0–6.
 | 0 | erledigt | 2026-05-12 |
 | 1 | erledigt | 2026-05-12 |
 | 2 | erledigt | 2026-05-12 |
-| 3 | pending | – |
+| 3 | erledigt | 2026-05-12 |
 | 4 | pending | – |
 | 5 | pending | – |
 | 6 | pending | – |

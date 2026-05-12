@@ -47,6 +47,12 @@ export const routes: Routes = [
           import('./features/audiences/audiences.component').then((m) => m.AudiencesComponent),
         title: 'Audiences · Briefing Agent',
       },
+      {
+        path: 'review/:ereignisId',
+        loadComponent: () =>
+          import('./features/review/review.component').then((m) => m.ReviewComponent),
+        title: 'Review · Briefing Agent',
+      },
     ],
   },
   {

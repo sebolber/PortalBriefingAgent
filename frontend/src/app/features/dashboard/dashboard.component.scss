@@ -42,10 +42,20 @@
 
 .entry-header {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
   margin-bottom: var(--space-sm);
   color: var(--color-text-secondary);
   font-size: 0.875rem;
+
+  time {
+    flex: 1;
+  }
+
+  .review-link {
+    color: var(--color-brand-primary);
+    font-weight: 600;
+  }
 }
 
 .entry-source {

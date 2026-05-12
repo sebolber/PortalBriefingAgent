@@ -12,6 +12,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "summary")
@@ -50,6 +54,13 @@ public class Summary extends AuditedEntity {
 
     @Column(name = "accepted_at")
     private Instant acceptedAt;
+
+    @Column(name = "regeneration_feedback", columnDefinition = "text")
+    private String regenerationFeedback;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "edit_history", nullable = false, columnDefinition = "jsonb")
+    private List<EditHistoryEntry> editHistory = new ArrayList<>();
 
     protected Summary() {
     }
@@ -141,4 +152,22 @@ public class Summary extends AuditedEntity {
         this.acceptedAt = acceptedAt;
     }
 
+    public String getRegenerationFeedback() {
+        return regenerationFeedback;
+    }
+
+    public void setRegenerationFeedback(String regenerationFeedback) {
+        this.regenerationFeedback = regenerationFeedback;
+    }
+
+    public List<EditHistoryEntry> getEditHistory() {
+        return editHistory == null ? List.of() : List.copyOf(editHistory);
+    }
+
+    public void appendHistory(EditHistoryEntry entry) {
+        if (editHistory == null) {
+            editHistory = new ArrayList<>();
+        }
+        editHistory.add(entry);
+    }
 }

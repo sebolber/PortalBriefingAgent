@@ -31,6 +31,7 @@
             <header class="entry-header">
               <span class="entry-source">{{ entry.sourceType === 'audio' ? 'Audio' : 'Text' }}</span>
               <time [attr.datetime]="entry.createdAt">{{ entry.createdAt | date: 'medium' }}</time>
+              <a [routerLink]="['/review', entry.id]" class="review-link">Review</a>
             </header>
             @if (entry.transcriptExcerpt) {
               <blockquote class="transcript">{{ entry.transcriptExcerpt }}</blockquote>
