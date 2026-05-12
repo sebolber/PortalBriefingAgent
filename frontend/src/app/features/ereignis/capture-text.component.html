@@ -1,0 +1,58 @@
+<section class="capture">
+  <header class="page-header">
+    <h1>Neues Ereignis erfassen</h1>
+    <a routerLink="/dashboard" class="back-link">Zurück zum Dashboard</a>
+  </header>
+
+  @if (result(); as response) {
+    <article class="success surface-card" data-testid="result">
+      <h2>Ereignis gespeichert</h2>
+      <p class="status">Review-Status: {{ response.reviewStatus }}</p>
+
+      @if (response.summaries.length > 0) {
+        <h3>Generierte Summary</h3>
+        <ul class="summary-list">
+          @for (summary of response.summaries; track summary.id) {
+            <li class="summary">
+              <span class="audience">{{ summary.audienceName }}</span>
+              <pre class="summary-text">{{ summary.summaryText }}</pre>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="actions">
+        <button type="button" class="brand-button" (click)="reset()">Weiteres Ereignis erfassen</button>
+        <a routerLink="/dashboard" class="secondary">Zum Dashboard</a>
+      </div>
+    </article>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" class="surface-card" novalidate>
+      <label for="text">Notiz</label>
+      <textarea
+        id="text"
+        rows="14"
+        class="brand-input text-area"
+        formControlName="text"
+        [attr.maxlength]="hardCap"
+        placeholder="Was ist passiert? Wer war beteiligt? Was wurde besprochen?"
+        [attr.aria-invalid]="form.controls.text.invalid && form.controls.text.touched"
+      ></textarea>
+      <p class="hint">Noch {{ remainingChars() }} Zeichen verfügbar.</p>
+
+      @if (error(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+
+      <div class="actions">
+        <button type="submit" class="brand-button" [disabled]="submitting()">
+          @if (submitting()) {
+            <span>Speichere…</span>
+          } @else {
+            <span>Speichern</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</section>

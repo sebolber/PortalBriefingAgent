@@ -1,0 +1,53 @@
+<section class="dashboard">
+  @let response = data();
+
+  <header class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      @if (response) {
+        <p class="window-hint">Letzte {{ response.windowDays }} Tage</p>
+      }
+    </div>
+    <a routerLink="/capture" class="brand-button">Neues Ereignis</a>
+  </header>
+
+  @if (state() === 'loading') {
+    <p class="loading" role="status">Lade Briefings…</p>
+  } @else if (state() === 'error') {
+    <div class="error" role="alert">
+      <p>Briefings konnten nicht geladen werden.</p>
+      <button type="button" class="brand-button" (click)="load()">Erneut versuchen</button>
+    </div>
+  } @else if (response) {
+    @if (response.ereignisse.length === 0) {
+      <div class="empty surface-card">
+        <p>Noch keine Ereignisse erfasst.</p>
+        <a routerLink="/capture" class="brand-button">Erstes Ereignis erfassen</a>
+      </div>
+    } @else {
+      <ul class="entry-list" data-testid="entries">
+        @for (entry of response.ereignisse; track entry.id) {
+          <li class="entry surface-card">
+            <header class="entry-header">
+              <span class="entry-source">{{ entry.sourceType === 'audio' ? 'Audio' : 'Text' }}</span>
+              <time [attr.datetime]="entry.createdAt">{{ entry.createdAt | date: 'medium' }}</time>
+            </header>
+            @if (entry.transcriptExcerpt) {
+              <blockquote class="transcript">{{ entry.transcriptExcerpt }}</blockquote>
+            }
+            @if (entry.summaries.length > 0) {
+              <ul class="summary-list">
+                @for (summary of entry.summaries; track summary.id) {
+                  <li class="summary">
+                    <span class="audience">{{ summary.audienceName }}</span>
+                    <p class="summary-text">{{ summary.summaryExcerpt }}</p>
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>
