@@ -26,12 +26,19 @@ außerhalb der DB erfüllt das Schutzziel.
 * `SecretCipher` uses **AES-256-GCM** with a 12-byte random nonce and a
   128-bit authentication tag. The wire format is
   `Base64(nonce || ciphertext-with-tag)`.
-* The master key is a 32-byte value loaded from the Spring property
-  `briefingagent.crypto.secret-key`, populated at runtime from the
-  environment variable `BRIEFINGAGENT_SECRET_KEY` (Base64-encoded). The
-  launcher (`scripts/run.sh`) generates a per-host key file at
-  `~/.briefingagent/secret-key` (chmod 600, parent dir chmod 700) on
-  first run and exports it for subsequent invocations.
+* The master key is a 32-byte value, resolved in this order:
+  1. The Spring property `briefingagent.crypto.secret-key`, typically
+     populated at runtime from the environment variable
+     `BRIEFINGAGENT_SECRET_KEY` (Base64-encoded). This is the path the
+     launcher uses.
+  2. The file `~/.briefingagent/secret-key` (chmod 600, parent dir
+     chmod 700). This makes `java -jar` style direct invocations work
+     once the launcher has written the file.
+
+  The launcher (`scripts/run.sh`) generates the file on first run and
+  also exports the env var, so both lookups succeed under it. Outside
+  the launcher, either path is sufficient on its own. Startup fails fast
+  if neither is available.
 * The existing `apiKeySecretRef` path stays as a fallback: when a
   provider has no `api_key_encrypted` value, the legacy `SecretStore`
   lookup is used. **Encrypted column takes precedence.**
