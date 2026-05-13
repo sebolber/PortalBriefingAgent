@@ -214,17 +214,16 @@ Integration-Tests (`*IT.java`) für die Schema-Migration plus die CHECK-Constrai
 
 ### Naming-Audit
 
-```
-$ grep -ri --exclude-dir=node_modules --exclude-dir=target --exclude-dir=dist \
-    --exclude-dir=.git --exclude='briefing-agent-phase1-spec.md' -l 'adesso' .
-$ # (keine Treffer)
-```
+Die rekursive `grep -ri`-Suche nach dem firmenbezeichnenden Begriff aus
+dem Designkontext — über alle Source-, Konfig-, Test- und
+Dokumentationsdateien außer der unveränderten Spec — liefert keinen
+Treffer.
 
 ---
 
 ## 6. Bestätigung gemäß Auftrag
 
-> *„`adesso`-Suche im gesamten Code: null Treffer."*
+> *„Suche nach dem verbotenen Begriff im gesamten Code: null Treffer."*
 
 Die rekursive `grep`-Suche nach dem firmenbezeichnenden Begriff aus dem
 Designkontext (case-insensitive) liefert über alle Source-, Konfig-,

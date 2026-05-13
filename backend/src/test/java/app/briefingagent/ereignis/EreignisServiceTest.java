@@ -17,6 +17,7 @@ import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
 import app.briefingagent.pipeline.AudienceClassificationService;
 import app.briefingagent.pipeline.SummaryGenerationService;
+import app.briefingagent.pipeline.TaskExtractionService;
 import app.briefingagent.stt.SttProviderClient;
 import app.briefingagent.summary.Summary;
 import app.briefingagent.summary.SummaryRepository;
@@ -56,6 +57,8 @@ class EreignisServiceTest {
     private AudienceClassificationService classificationService;
     @Mock
     private SummaryGenerationService summaryGenerationService;
+    @Mock
+    private TaskExtractionService taskExtractionService;
 
     @InjectMocks
     private EreignisService service;

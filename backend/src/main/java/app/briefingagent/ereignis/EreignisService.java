@@ -9,6 +9,7 @@ import app.briefingagent.llm.LlmRequest;
 import app.briefingagent.pipeline.AudienceClassificationService;
 import app.briefingagent.pipeline.AudienceMatch;
 import app.briefingagent.pipeline.SummaryGenerationService;
+import app.briefingagent.pipeline.TaskExtractionService;
 import app.briefingagent.stt.SttProviderClient;
 import app.briefingagent.stt.TranscriptionResult;
 import app.briefingagent.summary.ClassificationConfidence;
@@ -48,6 +49,7 @@ public class EreignisService {
     private final AudienceQueryService audienceQueryService;
     private final AudienceClassificationService classificationService;
     private final SummaryGenerationService summaryGenerationService;
+    private final TaskExtractionService taskExtractionService;
 
     public EreignisService(EreignisRepository ereignisRepository,
                            SummaryRepository summaryRepository,
@@ -57,7 +59,8 @@ public class EreignisService {
                            SttProviderClient sttClient,
                            AudienceQueryService audienceQueryService,
                            AudienceClassificationService classificationService,
-                           SummaryGenerationService summaryGenerationService) {
+                           SummaryGenerationService summaryGenerationService,
+                           TaskExtractionService taskExtractionService) {
         this.ereignisRepository = ereignisRepository;
         this.summaryRepository = summaryRepository;
         this.userRepository = userRepository;
@@ -67,6 +70,7 @@ public class EreignisService {
         this.audienceQueryService = audienceQueryService;
         this.classificationService = classificationService;
         this.summaryGenerationService = summaryGenerationService;
+        this.taskExtractionService = taskExtractionService;
     }
 
     @Transactional
@@ -143,9 +147,10 @@ public class EreignisService {
             fallbackSummary.setClassificationReasoning(
                     "Keine relevante Audience erkannt — Fallback auf das persönliche Topic.");
             summaryRepository.save(fallbackSummary);
-            return;
+        } else {
+            summaryGenerationService.generate(ereignis, matches);
         }
-        summaryGenerationService.generate(ereignis, matches);
+        taskExtractionService.extractAndPersist(ereignis);
     }
 
     @Transactional(readOnly = true)
