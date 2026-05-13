@@ -1,0 +1,59 @@
+<section class="audience-detail">
+  @let d = detail();
+  @let errorText = error();
+
+  @if (busy()) {
+    <p class="loading" role="status">Lade Audience…</p>
+  } @else if (errorText) {
+    <p class="error" role="alert">{{ errorText }}</p>
+  } @else if (d) {
+    <header class="sticky-header surface-card">
+      <span class="badge" [attr.data-type]="d.type">{{ d.type }}</span>
+      <h1>{{ d.name }}</h1>
+      @if (d.personaText) {
+        <p class="persona">{{ d.personaText }}</p>
+      }
+      @if (d.members.length > 0) {
+        <p class="members">
+          Mitglieder:
+          @for (m of d.members; track m.id) {
+            <a [routerLink]="['/audiences', 'person', m.id]">{{ m.displayName }}</a>
+          }
+        </p>
+      }
+    </header>
+
+    <article class="surface-card">
+      <h2>Letzte Summaries</h2>
+      @if (d.summaries.length === 0) {
+        <p class="empty">Keine Summaries.</p>
+      } @else {
+        <ul class="summaries">
+          @for (s of d.summaries; track s.id) {
+            <li>
+              <header><time>{{ s.createdAt | date: 'medium' }}</time></header>
+              <div class="summary-text" [innerHTML]="renderMarkdown(s.summaryText)"></div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <article class="surface-card">
+      <h2>Offene Aufgaben</h2>
+      @if (d.openTasks.length === 0) {
+        <p class="empty">Keine offenen Aufgaben.</p>
+      } @else {
+        <ul class="tasks">
+          @for (t of d.openTasks; track t.id) {
+            <li>
+              <strong>{{ t.title }}</strong>
+              <span class="status">{{ t.status }}</span>
+              @if (t.dueDate) { <span class="due">fällig {{ t.dueDate }}</span> }
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  }
+</section>

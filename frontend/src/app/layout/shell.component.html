@@ -12,6 +12,18 @@
       <a routerLink="/admin" routerLinkActive="active">Admin</a>
     </nav>
 
+    <form class="global-search" [formGroup]="searchForm" (submit)="onSearchSubmit($event)">
+      <input
+        #searchInput
+        type="search"
+        class="brand-input"
+        placeholder='Suche · "/" zum Fokussieren'
+        formControlName="q"
+        autocomplete="off"
+        aria-label="Globale Suche"
+      />
+    </form>
+
     <div class="user-menu">
       @if (currentUser(); as user) {
         <span class="user-name" [attr.aria-label]="'Eingeloggt als ' + user.fullName">{{ user.fullName }}</span>

@@ -23,7 +23,7 @@
 .primary-nav {
   display: flex;
   gap: var(--space-md);
-  flex: 1;
+  flex-wrap: wrap;
 
   a {
     padding: var(--space-xs) var(--space-sm);
@@ -41,6 +41,17 @@
       color: var(--color-brand-primary);
       background-color: rgba(0, 110, 199, 0.08);
     }
+  }
+}
+
+.global-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 320px;
+
+  input {
+    width: 100%;
   }
 }
 

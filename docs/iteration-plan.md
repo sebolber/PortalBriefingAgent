@@ -422,4 +422,4 @@ Iter 0–6.
 | 4 | erledigt | 2026-05-12 |
 | 5 | erledigt | 2026-05-12 |
 | 6 | erledigt | 2026-05-13 |
-| 7 | pending | – |
+| 7 | erledigt | 2026-05-13 |

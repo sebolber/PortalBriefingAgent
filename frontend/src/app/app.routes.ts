@@ -66,6 +66,18 @@ export const routes: Routes = [
         title: 'Admin · Briefing Agent',
       },
       {
+        path: 'search',
+        loadComponent: () =>
+          import('./features/search/search.component').then((m) => m.SearchComponent),
+        title: 'Suche · Briefing Agent',
+      },
+      {
+        path: 'audiences/:type/:id',
+        loadComponent: () =>
+          import('./features/search/audience-detail.component').then((m) => m.AudienceDetailComponent),
+        title: 'Audience-Detail · Briefing Agent',
+      },
+      {
         path: 'review/:ereignisId',
         loadComponent: () =>
           import('./features/review/review.component').then((m) => m.ReviewComponent),
