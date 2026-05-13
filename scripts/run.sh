@@ -310,6 +310,36 @@ build_backend() {
 }
 
 # ---------------------------------------------------------------------------
+# Encryption master key. Persisted per host so DB ciphertexts stay readable
+# across restarts. Operators can override by exporting BRIEFINGAGENT_SECRET_KEY
+# explicitly (e.g. from a real secret store).
+# ---------------------------------------------------------------------------
+
+ensure_secret_key() {
+  if [[ -n "${BRIEFINGAGENT_SECRET_KEY:-}" ]]; then
+    log "Using BRIEFINGAGENT_SECRET_KEY from the environment."
+    return
+  fi
+  local dir="${HOME}/.briefingagent"
+  local key_file="${dir}/secret-key"
+  mkdir -p "${dir}"
+  chmod 700 "${dir}"
+  if [[ -s "${key_file}" ]]; then
+    BRIEFINGAGENT_SECRET_KEY="$(cat "${key_file}")"
+    export BRIEFINGAGENT_SECRET_KEY
+    log "Loaded host encryption key from ${key_file}."
+    return
+  fi
+  log "Generating new 256-bit encryption master key at ${key_file}…"
+  local generated
+  generated="$(head -c 32 /dev/urandom | base64)"
+  (umask 077 && printf '%s' "${generated}" > "${key_file}")
+  chmod 600 "${key_file}"
+  BRIEFINGAGENT_SECRET_KEY="${generated}"
+  export BRIEFINGAGENT_SECRET_KEY
+}
+
+# ---------------------------------------------------------------------------
 # Launch.
 # ---------------------------------------------------------------------------
 
@@ -333,6 +363,7 @@ main() {
   ensure_maven
   ensure_node
   ensure_docker
+  ensure_secret_key
   start_database
   start_whisper
   build_frontend

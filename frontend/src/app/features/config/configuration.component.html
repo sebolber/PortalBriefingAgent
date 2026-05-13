@@ -12,7 +12,16 @@
       <label>Name<input class="brand-input" formControlName="name" /></label>
       <label>Endpoint-URL<input class="brand-input" formControlName="endpointUrl" /></label>
       <label>Modell<input class="brand-input" formControlName="modelName" /></label>
-      <label>API-Key Secret-Ref<input class="brand-input" formControlName="apiKeySecretRef" /></label>
+      <label>API-Key
+        <input
+          class="brand-input"
+          type="password"
+          autocomplete="new-password"
+          formControlName="apiKey"
+        />
+      </label>
+      <p class="hint">Wird verschlüsselt in der DB gespeichert (AES-256-GCM). Beim Bearbeiten leer lassen, wenn der Schlüssel unverändert bleiben soll.</p>
+      <label>API-Key Secret-Ref (Fallback, optional)<input class="brand-input" formControlName="apiKeySecretRef" /></label>
       <label>API-Type<input class="brand-input" formControlName="apiType" /></label>
       <button type="submit" class="brand-button" [disabled]="busy()">Anlegen</button>
     </form>
@@ -26,6 +35,7 @@
             <header>
               <strong>{{ p.name }}</strong>
               <span class="meta">{{ p.modelName }} · {{ p.endpointUrl }}</span>
+              @if (p.apiKeySet) { <span class="badge">Schlüssel gesetzt</span> }
             </header>
             <div class="purposes">
               @for (purpose of purposes; track purpose) {
@@ -63,7 +73,16 @@
       <label>Name<input class="brand-input" formControlName="name" /></label>
       <label>Endpoint-URL<input class="brand-input" formControlName="endpointUrl" /></label>
       <label>Modell<input class="brand-input" formControlName="modelName" /></label>
-      <label>API-Key Secret-Ref<input class="brand-input" formControlName="apiKeySecretRef" /></label>
+      <label>API-Key
+        <input
+          class="brand-input"
+          type="password"
+          autocomplete="new-password"
+          formControlName="apiKey"
+        />
+      </label>
+      <p class="hint">Wird verschlüsselt in der DB gespeichert (AES-256-GCM). Beim Bearbeiten leer lassen, wenn der Schlüssel unverändert bleiben soll.</p>
+      <label>API-Key Secret-Ref (Fallback, optional)<input class="brand-input" formControlName="apiKeySecretRef" /></label>
       <button type="submit" class="brand-button" [disabled]="busy()">Anlegen</button>
     </form>
 
@@ -76,6 +95,7 @@
             <header>
               <strong>{{ p.name }}</strong>
               <span class="meta">{{ p.modelName }} · {{ p.endpointUrl }}</span>
+              @if (p.apiKeySet) { <span class="badge">Schlüssel gesetzt</span> }
               @if (p.active) { <span class="badge">aktiv</span> }
             </header>
             <p class="test-result" [attr.data-state]="p.lastTestResult">

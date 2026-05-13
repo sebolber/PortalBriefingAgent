@@ -1,5 +1,6 @@
 package app.briefingagent.llm;
 
+import app.briefingagent.crypto.SecretCipher;
 import app.briefingagent.llm.config.LlmProvider;
 import app.briefingagent.llm.config.LlmProviderUsage;
 import app.briefingagent.llm.config.LlmProviderUsageRepository;
@@ -36,15 +37,18 @@ public class DbBackedLlmClient implements LlmClient {
     private final LlmProviderUsageRepository usageRepository;
     private final HttpChatCompletionClient httpClient;
     private final SecretStore secretStore;
+    private final SecretCipher secretCipher;
     private final MockLlmClient fallback;
 
     public DbBackedLlmClient(LlmProviderUsageRepository usageRepository,
                              HttpChatCompletionClient httpClient,
                              SecretStore secretStore,
+                             SecretCipher secretCipher,
                              MockLlmClient fallback) {
         this.usageRepository = usageRepository;
         this.httpClient = httpClient;
         this.secretStore = secretStore;
+        this.secretCipher = secretCipher;
         this.fallback = fallback;
     }
 
@@ -59,7 +63,14 @@ public class DbBackedLlmClient implements LlmClient {
             return fallback.complete(request);
         }
         LlmProvider provider = active.get().getProvider();
-        String apiKey = secretStore.resolve(provider.getApiKeySecretRef());
-        return httpClient.complete(provider, apiKey, request);
+        return httpClient.complete(provider, resolveApiKey(provider), request);
+    }
+
+    private String resolveApiKey(LlmProvider provider) {
+        String encrypted = provider.getApiKeyEncrypted();
+        if (encrypted != null && !encrypted.isBlank()) {
+            return secretCipher.decrypt(encrypted);
+        }
+        return secretStore.resolve(provider.getApiKeySecretRef());
     }
 }

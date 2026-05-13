@@ -43,6 +43,7 @@ export class ConfigurationComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(200)]],
     endpointUrl: ['', [Validators.required, Validators.maxLength(500)]],
     modelName: ['', [Validators.required, Validators.maxLength(200)]],
+    apiKey: ['', [Validators.maxLength(4000)]],
     apiKeySecretRef: ['', [Validators.maxLength(200)]],
     apiType: ['openai_compatible', [Validators.required, Validators.maxLength(50)]],
   });
@@ -50,7 +51,8 @@ export class ConfigurationComponent implements OnInit {
   protected readonly sttForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
     endpointUrl: ['', [Validators.required, Validators.maxLength(500)]],
-    modelName: ['whisper-large-v3', [Validators.required, Validators.maxLength(200)]],
+    modelName: ['Systran/faster-whisper-small', [Validators.required, Validators.maxLength(200)]],
+    apiKey: ['', [Validators.maxLength(4000)]],
     apiKeySecretRef: ['', [Validators.maxLength(200)]],
   });
 
@@ -95,6 +97,7 @@ export class ConfigurationComponent implements OnInit {
       name: value.name,
       endpointUrl: value.endpointUrl,
       modelName: value.modelName,
+      apiKey: value.apiKey ? value.apiKey : null,
       apiKeySecretRef: value.apiKeySecretRef || null,
       apiType: value.apiType || null,
     };
@@ -102,7 +105,8 @@ export class ConfigurationComponent implements OnInit {
       next: () => {
         this.notice.set('LLM-Provider angelegt.');
         this.llmForm.reset({
-          name: '', endpointUrl: '', modelName: '', apiKeySecretRef: '', apiType: 'openai_compatible',
+          name: '', endpointUrl: '', modelName: '', apiKey: '', apiKeySecretRef: '',
+          apiType: 'openai_compatible',
         });
         this.refresh();
       },
@@ -151,13 +155,15 @@ export class ConfigurationComponent implements OnInit {
       name: value.name,
       endpointUrl: value.endpointUrl,
       modelName: value.modelName,
+      apiKey: value.apiKey ? value.apiKey : null,
       apiKeySecretRef: value.apiKeySecretRef || null,
     };
     this.service.createSttProvider(body).subscribe({
       next: () => {
         this.notice.set('STT-Provider angelegt.');
         this.sttForm.reset({
-          name: '', endpointUrl: '', modelName: 'whisper-large-v3', apiKeySecretRef: '',
+          name: '', endpointUrl: '', modelName: 'Systran/faster-whisper-small',
+          apiKey: '', apiKeySecretRef: '',
         });
         this.refresh();
       },
