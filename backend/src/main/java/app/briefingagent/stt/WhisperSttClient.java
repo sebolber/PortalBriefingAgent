@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -34,6 +33,7 @@ public class WhisperSttClient implements SttProviderClient {
     private static final String FIELD_MODEL = "model";
     private static final String FIELD_RESPONSE_FORMAT = "response_format";
     private static final String FORMAT_VERBOSE_JSON = "verbose_json";
+    private static final String FIELD_DURATION = "duration";
 
     private final SttProviderProperties properties;
     private final RestClient restClient;
@@ -78,8 +78,8 @@ public class WhisperSttClient implements SttProviderClient {
         }
         String text = body.get("text").asText();
         String language = body.has("language") ? body.get("language").asText(null) : null;
-        Integer duration = body.has("duration") && body.get("duration").isNumber()
-                ? (int) Math.round(body.get("duration").asDouble())
+        Integer duration = body.has(FIELD_DURATION) && body.get(FIELD_DURATION).isNumber()
+                ? (int) Math.round(body.get(FIELD_DURATION).asDouble())
                 : null;
         return new TranscriptionResult(text, language, duration);
     }

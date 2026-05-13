@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SearchService {
 
     private static final int LIMIT_PER_BUCKET = 25;
+    private static final String AUTHOR_PARAM = "author";
 
     private final EntityManager em;
     private final UserAccountRepository userRepository;
@@ -85,7 +86,7 @@ public class SearchService {
                 LIMIT :lim
                 """)
                 .setParameter("q", q)
-                .setParameter("author", author.getId())
+                .setParameter(AUTHOR_PARAM, author.getId())
                 .setParameter("lim", LIMIT_PER_BUCKET)
                 .getResultList();
         return rows.stream()
@@ -106,7 +107,7 @@ public class SearchService {
                 LIMIT :lim
                 """)
                 .setParameter("q", q)
-                .setParameter("author", author.getId())
+                .setParameter(AUTHOR_PARAM, author.getId())
                 .setParameter("lim", LIMIT_PER_BUCKET)
                 .getResultList();
         return rows.stream()
@@ -128,7 +129,7 @@ public class SearchService {
                 LIMIT :lim
                 """)
                 .setParameter("q", q)
-                .setParameter("author", author.getId())
+                .setParameter(AUTHOR_PARAM, author.getId())
                 .setParameter("lim", LIMIT_PER_BUCKET)
                 .getResultList();
         return rows.stream()
@@ -150,7 +151,7 @@ public class SearchService {
                 LIMIT :lim
                 """)
                 .setParameter("q", q)
-                .setParameter("author", author.getId())
+                .setParameter(AUTHOR_PARAM, author.getId())
                 .setParameter("lim", LIMIT_PER_BUCKET)
                 .getResultList();
         return rows.stream()

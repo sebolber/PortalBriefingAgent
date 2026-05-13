@@ -53,22 +53,29 @@ public final class AuthorPrincipal implements UserDetails {
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    // Phase 1 conflates the four UserDetails lifecycle flags into a single
+    // active/inactive switch: an inactive account is treated as locked,
+    // expired and credential-expired all at once. The Spring Security
+    // contract demands the four separate methods, so the delegates stay.
+    @Override
+    @SuppressWarnings("java:S4144")
     public boolean isAccountNonExpired() {
         return enabled;
     }
 
     @Override
+    @SuppressWarnings("java:S4144")
     public boolean isAccountNonLocked() {
         return enabled;
     }
 
     @Override
+    @SuppressWarnings("java:S4144")
     public boolean isCredentialsNonExpired() {
-        return enabled;
-    }
-
-    @Override
-    public boolean isEnabled() {
         return enabled;
     }
 }

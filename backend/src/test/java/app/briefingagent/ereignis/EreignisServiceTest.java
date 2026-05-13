@@ -64,12 +64,14 @@ class EreignisServiceTest {
     private EreignisService service;
 
     private UserAccount author;
+    private UUID authorId;
     private Topic defaultTopic;
 
     @BeforeEach
     void setUp() {
         author = TestEntities.withRandomId(
                 new UserAccount("demo", "irrelevant", "Demo Author", "demo@example.invalid"));
+        authorId = author.getId();
         defaultTopic = TestEntities.withRandomId(new Topic(author, "My Notes", "persona"));
     }
 
@@ -113,7 +115,7 @@ class EreignisServiceTest {
     void capture_text_rejects_empty_input() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> service.captureText(author.getId(), "   "))
+        assertThatThrownBy(() -> service.captureText(authorId, "   "))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
@@ -127,7 +129,7 @@ class EreignisServiceTest {
     void capture_text_rejects_null_input() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> service.captureText(author.getId(), null))
+        assertThatThrownBy(() -> service.captureText(authorId, null))
                 .isInstanceOf(ApiException.class);
     }
 
@@ -136,7 +138,7 @@ class EreignisServiceTest {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
         String tooLong = "a".repeat(EreignisLimits.TEXT_HARD_CAP_CHARS + 1);
 
-        assertThatThrownBy(() -> service.captureText(author.getId(), tooLong))
+        assertThatThrownBy(() -> service.captureText(authorId, tooLong))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining(String.valueOf(EreignisLimits.TEXT_HARD_CAP_CHARS));
 
@@ -211,7 +213,7 @@ class EreignisServiceTest {
     void capture_audio_rejects_zero_byte_payload() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+        assertThatThrownBy(() -> service.captureAudio(authorId,
                 new java.io.ByteArrayInputStream(new byte[0]),
                 "audio/webm", "x.webm", 0L))
                 .isInstanceOf(ApiException.class)
@@ -225,7 +227,7 @@ class EreignisServiceTest {
     void capture_audio_rejects_unsupported_mime_type() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+        assertThatThrownBy(() -> service.captureAudio(authorId,
                 new java.io.ByteArrayInputStream(new byte[]{1}),
                 "video/mp4", "x.mp4", 1L))
                 .isInstanceOf(ApiException.class)
@@ -241,7 +243,7 @@ class EreignisServiceTest {
         when(sttClient.transcribe(any(), any(), any()))
                 .thenThrow(new ApiException(HttpStatus.BAD_GATEWAY, "STT down"));
 
-        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+        assertThatThrownBy(() -> service.captureAudio(authorId,
                 new java.io.ByteArrayInputStream(new byte[]{1}),
                 "audio/webm", "x.webm", 1L))
                 .isInstanceOf(ApiException.class)
@@ -268,9 +270,10 @@ class EreignisServiceTest {
     void edit_transcript_rejects_when_already_released() {
         Ereignis ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.TEXT));
         ereignis.setReviewStatus(ReviewStatus.RELEASED);
-        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+        UUID ereignisId = ereignis.getId();
+        when(ereignisRepository.findById(ereignisId)).thenReturn(Optional.of(ereignis));
 
-        assertThatThrownBy(() -> service.editTranscript(author.getId(), ereignis.getId(), "x"))
+        assertThatThrownBy(() -> service.editTranscript(authorId, ereignisId, "x"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.CONFLICT);
@@ -281,9 +284,10 @@ class EreignisServiceTest {
         UserAccount stranger = TestEntities.withRandomId(
                 new UserAccount("other", "x", "Other", "other@example.invalid"));
         Ereignis ereignis = TestEntities.withRandomId(new Ereignis(stranger, EreignisSourceType.TEXT));
-        when(ereignisRepository.findById(ereignis.getId())).thenReturn(Optional.of(ereignis));
+        UUID ereignisId = ereignis.getId();
+        when(ereignisRepository.findById(ereignisId)).thenReturn(Optional.of(ereignis));
 
-        assertThatThrownBy(() -> service.editTranscript(author.getId(), ereignis.getId(), "x"))
+        assertThatThrownBy(() -> service.editTranscript(authorId, ereignisId, "x"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.NOT_FOUND);
@@ -307,7 +311,7 @@ class EreignisServiceTest {
         when(sttClient.transcribe(any(), any(), any()))
                 .thenReturn(new app.briefingagent.stt.TranscriptionResult("   ", "de", 12));
 
-        assertThatThrownBy(() -> service.captureAudio(author.getId(),
+        assertThatThrownBy(() -> service.captureAudio(authorId,
                 new java.io.ByteArrayInputStream(new byte[]{1}),
                 "audio/webm", "x.webm", 1L))
                 .isInstanceOf(ApiException.class)

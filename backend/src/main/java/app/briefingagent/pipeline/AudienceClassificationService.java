@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,33 +98,35 @@ public class AudienceClassificationService {
 
         List<AudienceMatch> matches = new ArrayList<>();
         for (JsonNode entry : array) {
-            String idStr = textOrNull(entry, "id");
-            String typeStr = textOrNull(entry, "type");
-            String confStr = textOrNull(entry, "confidence");
-            String reasoning = textOrNull(entry, "reasoning");
-            if (idStr == null) {
-                continue;
-            }
-            UUID id;
-            try {
-                id = UUID.fromString(idStr);
-            } catch (IllegalArgumentException ex) {
-                LOG.debug("Classifier returned non-UUID id '{}'", idStr);
-                continue;
-            }
-            AudienceRef ref = byId.get(id);
-            if (ref == null) {
-                LOG.debug("Classifier referenced unknown audience id {}", id);
-                continue;
-            }
-            if (typeStr != null && !typeStr.equalsIgnoreCase(ref.type().dbValue())) {
-                LOG.debug("Classifier returned mismatched type '{}' for audience {}", typeStr, id);
-                continue;
-            }
-            ClassificationConfidence confidence = parseConfidence(confStr);
-            matches.add(new AudienceMatch(ref, confidence, reasoning));
+            parseEntry(entry, byId).ifPresent(matches::add);
         }
         return matches;
+    }
+
+    private Optional<AudienceMatch> parseEntry(JsonNode entry, Map<UUID, AudienceRef> byId) {
+        String idStr = textOrNull(entry, "id");
+        if (idStr == null) {
+            return Optional.empty();
+        }
+        UUID id;
+        try {
+            id = UUID.fromString(idStr);
+        } catch (IllegalArgumentException ex) {
+            LOG.debug("Classifier returned non-UUID id '{}'", idStr);
+            return Optional.empty();
+        }
+        AudienceRef ref = byId.get(id);
+        if (ref == null) {
+            LOG.debug("Classifier referenced unknown audience id {}", id);
+            return Optional.empty();
+        }
+        String typeStr = textOrNull(entry, "type");
+        if (typeStr != null && !typeStr.equalsIgnoreCase(ref.type().dbValue())) {
+            LOG.debug("Classifier returned mismatched type '{}' for audience {}", typeStr, id);
+            return Optional.empty();
+        }
+        ClassificationConfidence confidence = parseConfidence(textOrNull(entry, "confidence"));
+        return Optional.of(new AudienceMatch(ref, confidence, textOrNull(entry, "reasoning")));
     }
 
     private static String textOrNull(JsonNode node, String field) {

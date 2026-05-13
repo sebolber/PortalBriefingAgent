@@ -109,7 +109,7 @@ class SummaryControllerTest {
     void regenerate_propagates_optional_feedback() throws Exception {
         Summary updated = buildSummary();
         updated.setEditState(EditState.REGENERATED);
-        when(reviewService.regenerate(eq(updated.getId()), eq(demoUserId), eq("kürzer")))
+        when(reviewService.regenerate(updated.getId(), demoUserId, "kürzer"))
                 .thenReturn(updated);
 
         mockMvc.perform(post("/api/summaries/" + updated.getId() + "/regenerate")
@@ -124,7 +124,7 @@ class SummaryControllerTest {
     @Test
     void regenerate_works_without_body() throws Exception {
         Summary updated = buildSummary();
-        when(reviewService.regenerate(eq(updated.getId()), eq(demoUserId), eq(null)))
+        when(reviewService.regenerate(updated.getId(), demoUserId, null))
                 .thenReturn(updated);
 
         mockMvc.perform(post("/api/summaries/" + updated.getId() + "/regenerate")

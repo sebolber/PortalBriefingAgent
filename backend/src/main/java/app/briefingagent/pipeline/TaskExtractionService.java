@@ -5,16 +5,13 @@ import app.briefingagent.llm.LlmClient;
 import app.briefingagent.llm.LlmJsonResponses;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
-import app.briefingagent.person.Person;
 import app.briefingagent.person.PersonRepository;
-import app.briefingagent.persongroup.PersonGroup;
 import app.briefingagent.persongroup.PersonGroupRepository;
 import app.briefingagent.task.Task;
 import app.briefingagent.task.TaskRepository;
 import app.briefingagent.task.TaskStatus;
 import app.briefingagent.task.TaskStatusHistory;
 import app.briefingagent.task.TaskStatusHistoryRepository;
-import app.briefingagent.topic.Topic;
 import app.briefingagent.topic.TopicRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -121,13 +118,13 @@ public class TaskExtractionService {
         }
         return switch (type) {
             case "person" -> personRepository.findById(id)
-                    .map(p -> (Task) Task.forPerson(ereignis.getAuthor(), title, p))
+                    .map(p -> Task.forPerson(ereignis.getAuthor(), title, p))
                     .orElseGet(() -> Task.forSelf(ereignis.getAuthor(), title));
             case "persongroup" -> personGroupRepository.findById(id)
-                    .map(g -> (Task) Task.forPersonGroup(ereignis.getAuthor(), title, g))
+                    .map(g -> Task.forPersonGroup(ereignis.getAuthor(), title, g))
                     .orElseGet(() -> Task.forSelf(ereignis.getAuthor(), title));
             case "topic" -> topicRepository.findById(id)
-                    .map(t -> (Task) Task.forTopic(ereignis.getAuthor(), title, t))
+                    .map(t -> Task.forTopic(ereignis.getAuthor(), title, t))
                     .orElseGet(() -> Task.forSelf(ereignis.getAuthor(), title));
             default -> Task.forSelf(ereignis.getAuthor(), title);
         };

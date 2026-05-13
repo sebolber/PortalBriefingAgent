@@ -47,7 +47,6 @@ class MockLlmClientTest {
 
         String out = client.complete(new LlmRequest(LlmPurpose.SUMMARY_GENERATION, null, input));
 
-        assertThat(out).contains("Anna");
-        assertThat(out).doesNotContain("   Anna");
+        assertThat(out).contains("Anna").doesNotContain("   Anna");
     }
 }

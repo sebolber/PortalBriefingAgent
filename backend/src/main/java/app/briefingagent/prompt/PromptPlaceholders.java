@@ -16,11 +16,13 @@ public final class PromptPlaceholders {
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{\\s*([a-zA-Z_]+)\\s*}}");
 
+    private static final String TRANSCRIPT = "transcript";
+
     private static final Map<LlmPurpose, Set<String>> REQUIRED = Map.of(
-            LlmPurpose.AUDIENCE_CLASSIFICATION, Set.of("transcript", "audiences_with_personas"),
-            LlmPurpose.SUMMARY_GENERATION, Set.of("transcript", "audience_name", "audience_persona", "language"),
-            LlmPurpose.TASK_EXTRACTION, Set.of("transcript", "author_name"),
-            LlmPurpose.TRANSCRIPT_CORRECTION, Set.of("transcript"));
+            LlmPurpose.AUDIENCE_CLASSIFICATION, Set.of(TRANSCRIPT, "audiences_with_personas"),
+            LlmPurpose.SUMMARY_GENERATION, Set.of(TRANSCRIPT, "audience_name", "audience_persona", "language"),
+            LlmPurpose.TASK_EXTRACTION, Set.of(TRANSCRIPT, "author_name"),
+            LlmPurpose.TRANSCRIPT_CORRECTION, Set.of(TRANSCRIPT));
 
     private PromptPlaceholders() {
     }

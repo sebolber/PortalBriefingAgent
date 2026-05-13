@@ -13,6 +13,7 @@ import app.briefingagent.common.TestEntities;
 import app.briefingagent.user.UserAccount;
 import app.briefingagent.user.UserAccountRepository;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,12 +35,14 @@ class TaskServiceTest {
     TaskService service;
 
     private UserAccount author;
+    private UUID authorId;
 
     @BeforeEach
     void setUp() {
         service = new TaskService(taskRepository, historyRepository, userRepository);
         author = TestEntities.withRandomId(
                 new UserAccount("demo", "x", "Demo", "demo@example.invalid"));
+        authorId = author.getId();
     }
 
     @Test
@@ -102,11 +105,11 @@ class TaskServiceTest {
     void change_status_from_terminal_returns_409() {
         Task task = TestEntities.withRandomId(Task.forSelf(author, "x"));
         task.setStatus(TaskStatus.DONE);
+        UUID taskId = task.getId();
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
-        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 
-        assertThatThrownBy(() ->
-                        service.changeStatus(author.getId(), task.getId(), TaskStatus.IN_PROGRESS, null))
+        assertThatThrownBy(() -> service.changeStatus(authorId, taskId, TaskStatus.IN_PROGRESS, null))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.CONFLICT);
@@ -117,10 +120,11 @@ class TaskServiceTest {
         Task task = TestEntities.withRandomId(Task.forSelf(
                 TestEntities.withRandomId(new UserAccount("other", "x", "Other", "other@example.invalid")),
                 "x"));
+        UUID taskId = task.getId();
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
-        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 
-        assertThatThrownBy(() -> service.changeStatus(author.getId(), task.getId(), TaskStatus.DONE, null))
+        assertThatThrownBy(() -> service.changeStatus(authorId, taskId, TaskStatus.DONE, null))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.NOT_FOUND);

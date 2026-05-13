@@ -3,7 +3,6 @@ package app.briefingagent.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,8 +57,8 @@ class UserAccountServiceTest {
         assertThat(saved.getPasswordHash()).isEqualTo("hashed");
         for (LlmPurpose purpose : LlmPurpose.values()) {
             verify(promptTemplateService, times(1))
-                    .saveNewVersion(eq(saved.getId()), eq(purpose),
-                            eq(DefaultPromptContent.BY_PURPOSE.get(purpose)));
+                    .saveNewVersion(saved.getId(), purpose,
+                            DefaultPromptContent.BY_PURPOSE.get(purpose));
         }
     }
 

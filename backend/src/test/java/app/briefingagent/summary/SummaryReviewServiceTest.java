@@ -36,19 +36,23 @@ class SummaryReviewServiceTest {
     SummaryReviewService service;
 
     private UserAccount author;
+    private UUID authorId;
     private Ereignis ereignis;
     private Topic topic;
     private Summary summary;
+    private UUID summaryId;
 
     @BeforeEach
     void setUp() {
         service = new SummaryReviewService(repository, llmClient);
         author = TestEntities.withRandomId(
                 new UserAccount("demo", "x", "Demo", "demo@example.invalid"));
+        authorId = author.getId();
         ereignis = TestEntities.withRandomId(new Ereignis(author, EreignisSourceType.TEXT));
         ereignis.setTranscriptText("Heute Workshop mit Anna");
         topic = TestEntities.withRandomId(new Topic(author, "My Notes", "personal"));
         summary = TestEntities.withRandomId(Summary.forTopic(ereignis, topic, "## Ursprünglich"));
+        summaryId = summary.getId();
     }
 
     private void stubSavePassThrough() {
@@ -86,7 +90,7 @@ class SummaryReviewServiceTest {
     void edit_rejects_blank_text() {
         when(repository.findById(summary.getId())).thenReturn(Optional.of(summary));
 
-        assertThatThrownBy(() -> service.edit(summary.getId(), author.getId(), "   "))
+        assertThatThrownBy(() -> service.edit(summaryId, authorId, "   "))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
@@ -97,7 +101,7 @@ class SummaryReviewServiceTest {
         summary.setAcceptedAt(Instant.now());
         when(repository.findById(summary.getId())).thenReturn(Optional.of(summary));
 
-        assertThatThrownBy(() -> service.edit(summary.getId(), author.getId(), "x"))
+        assertThatThrownBy(() -> service.edit(summaryId, authorId, "x"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.CONFLICT);
@@ -140,7 +144,7 @@ class SummaryReviewServiceTest {
         summary.setAcceptedAt(Instant.now());
         when(repository.findById(summary.getId())).thenReturn(Optional.of(summary));
 
-        assertThatThrownBy(() -> service.regenerate(summary.getId(), author.getId(), "x"))
+        assertThatThrownBy(() -> service.regenerate(summaryId, authorId, "x"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.CONFLICT);

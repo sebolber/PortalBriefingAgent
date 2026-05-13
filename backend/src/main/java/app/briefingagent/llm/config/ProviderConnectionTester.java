@@ -47,6 +47,10 @@ public final class ProviderConnectionTester {
                 return new Result(false, "Endpoint returned HTTP " + status, latency);
             }
             return new Result(true, "HTTP " + status, latency);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return new Result(false, "Interrupted: " + ex.getMessage(),
+                    Duration.between(started, Instant.now()));
         } catch (Exception ex) {
             return new Result(false, "Unreachable: " + ex.getMessage(),
                     Duration.between(started, Instant.now()));
