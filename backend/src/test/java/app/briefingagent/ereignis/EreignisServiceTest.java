@@ -212,9 +212,10 @@ class EreignisServiceTest {
     @Test
     void capture_audio_rejects_zero_byte_payload() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        java.io.ByteArrayInputStream payload = new java.io.ByteArrayInputStream(new byte[0]);
 
         assertThatThrownBy(() -> service.captureAudio(authorId,
-                new java.io.ByteArrayInputStream(new byte[0]),
+                payload,
                 "audio/webm", "x.webm", 0L))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
@@ -226,9 +227,10 @@ class EreignisServiceTest {
     @Test
     void capture_audio_rejects_unsupported_mime_type() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+        java.io.ByteArrayInputStream payload = new java.io.ByteArrayInputStream(new byte[]{1});
 
         assertThatThrownBy(() -> service.captureAudio(authorId,
-                new java.io.ByteArrayInputStream(new byte[]{1}),
+                payload,
                 "video/mp4", "x.mp4", 1L))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
@@ -242,9 +244,10 @@ class EreignisServiceTest {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
         when(sttClient.transcribe(any(), any(), any()))
                 .thenThrow(new ApiException(HttpStatus.BAD_GATEWAY, "STT down"));
+        java.io.ByteArrayInputStream payload = new java.io.ByteArrayInputStream(new byte[]{1});
 
         assertThatThrownBy(() -> service.captureAudio(authorId,
-                new java.io.ByteArrayInputStream(new byte[]{1}),
+                payload,
                 "audio/webm", "x.webm", 1L))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
@@ -310,9 +313,10 @@ class EreignisServiceTest {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
         when(sttClient.transcribe(any(), any(), any()))
                 .thenReturn(new app.briefingagent.stt.TranscriptionResult("   ", "de", 12));
+        java.io.ByteArrayInputStream payload = new java.io.ByteArrayInputStream(new byte[]{1});
 
         assertThatThrownBy(() -> service.captureAudio(authorId,
-                new java.io.ByteArrayInputStream(new byte[]{1}),
+                payload,
                 "audio/webm", "x.webm", 1L))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
