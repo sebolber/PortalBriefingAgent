@@ -248,18 +248,35 @@ start_whisper() {
   log "Starting local Whisper (OpenAI-compatible API on :9000) via docker compose…"
   compose_cmd up -d whisper
 
-  log "Waiting for Whisper to come up. First start downloads the model and can take several minutes…"
+  log "Waiting for Whisper to accept connections…"
   local attempts=60
   until docker exec briefing-agent-whisper curl -fsS http://localhost:8000/v1/models >/dev/null 2>&1; do
     attempts=$((attempts - 1))
     if [[ "${attempts}" -le 0 ]]; then
-      log "Whisper did not report healthy within 5 minutes — continuing anyway."
+      log "Whisper did not respond within 5 minutes — continuing anyway."
       log "Re-run later or set BA_SKIP_WHISPER=1 if you do not need audio capture."
       return
     fi
     sleep 5
   done
-  log "Whisper is ready."
+  log "Whisper is up."
+
+  local model="${WHISPER_MODEL:-Systran/faster-whisper-small}"
+  if docker exec briefing-agent-whisper curl -fsS "http://localhost:8000/v1/models" 2>/dev/null \
+      | grep -q "\"${model}\""; then
+    log "Whisper model '${model}' is already loaded."
+    return
+  fi
+
+  log "Pre-pulling Whisper model '${model}' (one-time download, ~500 MB for the 'small' checkpoint)…"
+  if docker exec briefing-agent-whisper curl -fsS -X POST \
+        -H 'Content-Type: application/json' \
+        -d "{\"id\":\"${model}\"}" \
+        "http://localhost:8000/v1/models" >/dev/null 2>&1; then
+    log "Whisper model download triggered."
+  else
+    log "Whisper preload call failed — the first audio capture will trigger the download instead."
+  fi
 }
 
 # ---------------------------------------------------------------------------
