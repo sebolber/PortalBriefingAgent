@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface SummaryRepository extends JpaRepository<Summary, UUID> {
 
     List<Summary> findByEreignisOrderByCreatedAtAsc(Ereignis ereignis);
+
+    List<Summary> findByCreatedAtBefore(java.time.Instant cutoff);
 }

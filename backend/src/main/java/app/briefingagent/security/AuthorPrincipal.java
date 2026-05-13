@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 public final class AuthorPrincipal implements UserDetails {
 
     public static final String ROLE_AUTHOR = "ROLE_AUTHOR";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     private final UUID userId;
     private final String username;
@@ -23,7 +24,13 @@ public final class AuthorPrincipal implements UserDetails {
         this.username = user.getUsername();
         this.passwordHash = user.getPasswordHash();
         this.enabled = user.isActive();
-        this.authorities = List.of(new SimpleGrantedAuthority(ROLE_AUTHOR));
+        if (user.isAdmin()) {
+            this.authorities = List.of(
+                    new SimpleGrantedAuthority(ROLE_AUTHOR),
+                    new SimpleGrantedAuthority(ROLE_ADMIN));
+        } else {
+            this.authorities = List.of(new SimpleGrantedAuthority(ROLE_AUTHOR));
+        }
     }
 
     public UUID userId() {

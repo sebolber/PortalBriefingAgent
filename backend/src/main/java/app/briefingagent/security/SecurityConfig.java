@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers("/api/csrf").permitAll()
                         .requestMatchers("/", "/index.html", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.svg").permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority(AuthorPrincipal.ROLE_ADMIN)
                         .requestMatchers("/api/**").hasAuthority(AuthorPrincipal.ROLE_AUTHOR)
                         .anyRequest().permitAll())
                 .exceptionHandling(eh -> eh

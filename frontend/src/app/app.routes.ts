@@ -60,6 +60,12 @@ export const routes: Routes = [
         title: 'Konfiguration · Briefing Agent',
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./features/admin/admin.component').then((m) => m.AdminComponent),
+        title: 'Admin · Briefing Agent',
+      },
+      {
         path: 'review/:ereignisId',
         loadComponent: () =>
           import('./features/review/review.component').then((m) => m.ReviewComponent),

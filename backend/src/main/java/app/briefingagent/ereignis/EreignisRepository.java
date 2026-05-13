@@ -13,4 +13,6 @@ public interface EreignisRepository extends JpaRepository<Ereignis, UUID> {
 
     List<Ereignis> findByAuthorAndCreatedAtAfterOrderByCreatedAtDesc(
             UserAccount author, Instant since, Pageable pageable);
+
+    List<Ereignis> findByTranscriptTextIsNotNullAndCreatedAtBefore(Instant cutoff);
 }

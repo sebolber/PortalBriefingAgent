@@ -35,8 +35,10 @@ public class DevAuthorBootstrap {
         if (repository.findByUsername(DEFAULT_USERNAME).isPresent()) {
             return;
         }
-        userAccountService.createLocalAuthor(DEFAULT_USERNAME, DEFAULT_PASSWORD,
-                DEFAULT_FULL_NAME, DEFAULT_EMAIL);
+        UserAccount admin = userAccountService.createLocalAuthor(
+                DEFAULT_USERNAME, DEFAULT_PASSWORD, DEFAULT_FULL_NAME, DEFAULT_EMAIL);
+        admin.setAdmin(true);
+        repository.save(admin);
         LOG.info("Bootstrapped dev author '{}' (change password before any non-local use).",
                 DEFAULT_USERNAME);
     }

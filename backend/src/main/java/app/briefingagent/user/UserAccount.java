@@ -37,6 +37,9 @@ public class UserAccount extends BaseEntity {
     @Column(name = "deletion_scheduled_at")
     private Instant deletionScheduledAt;
 
+    @Column(name = "is_admin", nullable = false)
+    private boolean admin;
+
     protected UserAccount() {
     }
 
@@ -109,5 +112,13 @@ public class UserAccount extends BaseEntity {
 
     public boolean isActive() {
         return status == UserStatus.ACTIVE;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 }
