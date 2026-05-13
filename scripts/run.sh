@@ -250,7 +250,7 @@ start_whisper() {
 
   log "Waiting for Whisper to come up. First start downloads the model and can take several minutes…"
   local attempts=60
-  until docker exec briefing-agent-whisper curl -fsS http://localhost:8000/health >/dev/null 2>&1; do
+  until docker exec briefing-agent-whisper curl -fsS http://localhost:8000/v1/models >/dev/null 2>&1; do
     attempts=$((attempts - 1))
     if [[ "${attempts}" -le 0 ]]; then
       log "Whisper did not report healthy within 5 minutes — continuing anyway."
