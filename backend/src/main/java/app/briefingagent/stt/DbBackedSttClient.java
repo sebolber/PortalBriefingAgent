@@ -38,6 +38,7 @@ public class DbBackedSttClient implements SttProviderClient {
     private static final String FIELD_MODEL = "model";
     private static final String FIELD_RESPONSE_FORMAT = "response_format";
     private static final String FORMAT_VERBOSE_JSON = "verbose_json";
+    private static final String FIELD_DURATION = "duration";
 
     private final SttProviderRepository repository;
     private final SecretStore secretStore;
@@ -111,8 +112,8 @@ public class DbBackedSttClient implements SttProviderClient {
         }
         String text = response.get("text").asText();
         String language = response.has("language") ? response.get("language").asText(null) : null;
-        Integer duration = response.has("duration") && response.get("duration").isNumber()
-                ? (int) Math.round(response.get("duration").asDouble())
+        Integer duration = response.has(FIELD_DURATION) && response.get(FIELD_DURATION).isNumber()
+                ? (int) Math.round(response.get(FIELD_DURATION).asDouble())
                 : null;
         return new TranscriptionResult(text, language, duration);
     }

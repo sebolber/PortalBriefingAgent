@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -118,9 +119,10 @@ class UserDeactivationServiceTest {
     void reactivation_after_grace_window_returns_409() {
         target.setStatus(UserStatus.INACTIVE);
         target.setDeletionScheduledAt(now.minusSeconds(60));
-        when(userRepository.findById(target.getId())).thenReturn(Optional.of(target));
+        UUID targetId = target.getId();
+        when(userRepository.findById(targetId)).thenReturn(Optional.of(target));
 
-        assertThatThrownBy(() -> service.reactivate(target.getId()))
+        assertThatThrownBy(() -> service.reactivate(targetId))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.CONFLICT);

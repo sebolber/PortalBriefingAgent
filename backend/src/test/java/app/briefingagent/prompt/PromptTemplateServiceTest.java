@@ -14,6 +14,7 @@ import app.briefingagent.user.UserAccount;
 import app.briefingagent.user.UserAccountRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ class PromptTemplateServiceTest {
     PromptTemplateService service;
 
     private UserAccount author;
+    private UUID authorId;
     private final String validTaskPrompt = "{{transcript}} und {{author_name}}";
 
     @BeforeEach
@@ -40,6 +42,7 @@ class PromptTemplateServiceTest {
         service = new PromptTemplateService(repository, userRepository);
         author = TestEntities.withRandomId(
                 new UserAccount("demo", "x", "Demo", "demo@example.invalid"));
+        authorId = author.getId();
     }
 
     @Test
@@ -75,7 +78,7 @@ class PromptTemplateServiceTest {
     void save_rejects_template_missing_required_placeholders() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
-        assertThatThrownBy(() -> service.saveNewVersion(author.getId(), LlmPurpose.TASK_EXTRACTION, "no placeholders"))
+        assertThatThrownBy(() -> service.saveNewVersion(authorId, LlmPurpose.TASK_EXTRACTION, "no placeholders"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
@@ -105,8 +108,9 @@ class PromptTemplateServiceTest {
     void restore_unknown_template_returns_404() {
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
         when(repository.findById(any())).thenReturn(Optional.empty());
+        UUID randomId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> service.restoreVersion(author.getId(), java.util.UUID.randomUUID()))
+        assertThatThrownBy(() -> service.restoreVersion(authorId, randomId))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.NOT_FOUND);
@@ -118,10 +122,11 @@ class PromptTemplateServiceTest {
                 new UserAccount("other", "x", "Other", "other@example.invalid"));
         PromptTemplate t = TestEntities.withRandomId(
                 new PromptTemplate(stranger, LlmPurpose.TASK_EXTRACTION, validTaskPrompt, 1, false, stranger));
+        UUID templateId = t.getId();
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
-        when(repository.findById(t.getId())).thenReturn(Optional.of(t));
+        when(repository.findById(templateId)).thenReturn(Optional.of(t));
 
-        assertThatThrownBy(() -> service.restoreVersion(author.getId(), t.getId()))
+        assertThatThrownBy(() -> service.restoreVersion(authorId, templateId))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.NOT_FOUND);
@@ -133,7 +138,7 @@ class PromptTemplateServiceTest {
         when(repository.findByAuthorAndPurposeAndActiveTrue(author, LlmPurpose.TASK_EXTRACTION))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.activeFor(author.getId(), LlmPurpose.TASK_EXTRACTION))
+        assertThatThrownBy(() -> service.activeFor(authorId, LlmPurpose.TASK_EXTRACTION))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.NOT_FOUND);

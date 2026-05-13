@@ -98,9 +98,9 @@ class WhisperSttClientTest {
     void transcribe_throws_502_on_upstream_500() {
         wireMock.stubFor(post(urlPathEqualTo("/v1/audio/transcriptions"))
                 .willReturn(aResponse().withStatus(500).withBody("nope")));
+        ByteArrayInputStream audio = new ByteArrayInputStream(new byte[]{1});
 
-        assertThatThrownBy(() -> client.transcribe(
-                new ByteArrayInputStream(new byte[]{1}), "audio/webm", "a.webm"))
+        assertThatThrownBy(() -> client.transcribe(audio, "audio/webm", "a.webm"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.BAD_GATEWAY);
@@ -112,9 +112,9 @@ class WhisperSttClientTest {
                 .willReturn(aResponse().withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"language\":\"de\"}")));
+        ByteArrayInputStream audio = new ByteArrayInputStream(new byte[]{1});
 
-        assertThatThrownBy(() -> client.transcribe(
-                new ByteArrayInputStream(new byte[]{1}), "audio/webm", "a.webm"))
+        assertThatThrownBy(() -> client.transcribe(audio, "audio/webm", "a.webm"))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getStatus())
                 .isEqualTo(HttpStatus.BAD_GATEWAY);

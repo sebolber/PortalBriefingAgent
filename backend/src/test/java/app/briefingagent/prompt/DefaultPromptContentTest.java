@@ -25,8 +25,7 @@ class DefaultPromptContentTest {
 
     @Test
     void map_covers_every_known_purpose() {
-        for (LlmPurpose purpose : LlmPurpose.values()) {
-            assertThat(DefaultPromptContent.BY_PURPOSE).containsKey(purpose);
-        }
+        assertThat(DefaultPromptContent.BY_PURPOSE.keySet())
+                .containsExactlyInAnyOrder(LlmPurpose.values());
     }
 }

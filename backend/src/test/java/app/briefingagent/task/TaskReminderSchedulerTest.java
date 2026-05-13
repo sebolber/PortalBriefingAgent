@@ -86,7 +86,7 @@ class TaskReminderSchedulerTest {
         when(taskRepository.findByDueDateLessThanEqualAndStatusIn(eq(today.plusDays(1)), any()))
                 .thenReturn(List.of());
         when(reminderRepository.existsByTaskAndReminderTypeAndRemindedOn(
-                eq(overdue), eq(TaskReminderType.ON_DUE_DATE), eq(today))).thenReturn(true);
+                overdue, TaskReminderType.ON_DUE_DATE, today)).thenReturn(true);
 
         int created = scheduler.runOnce();
 

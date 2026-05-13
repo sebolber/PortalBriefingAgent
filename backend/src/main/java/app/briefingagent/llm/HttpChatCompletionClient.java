@@ -43,6 +43,10 @@ public class HttpChatCompletionClient {
         factory.setConnectTimeout(Duration.ofSeconds(10));
         factory.setReadTimeout(Duration.ofSeconds(180));
         String target = chatCompletionsUrl(provider.getEndpointUrl());
+        if (target == null || target.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_GATEWAY,
+                    "LLM provider has no endpoint URL configured");
+        }
         RestClient client = RestClient.builder()
                 .baseUrl(target)
                 .requestFactory(factory)
