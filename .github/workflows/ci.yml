@@ -50,6 +50,24 @@ jobs:
             mvn -B -ntp verify
           fi
 
+      - name: Refresh Sonar issue snapshot
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WAIT_FOR_SCAN: "1"
+        run: |
+          gh label create sonar-snapshot --description "Auto-managed Sonar issue snapshot" --color 0075ca --force >/dev/null 2>&1 || true
+          body_file="$(mktemp)"
+          bash scripts/fetch-sonar-issues.sh > "$body_file"
+          issue_number=$(gh issue list --label sonar-snapshot --state open --json number --jq '.[0].number // empty')
+          if [ -n "$issue_number" ]; then
+            gh issue edit "$issue_number" --body-file "$body_file"
+            echo "Updated issue #${issue_number}"
+          else
+            gh issue create --title "Sonar Issue Snapshot — main" --label sonar-snapshot --body-file "$body_file"
+          fi
+
       - name: Upload surefire/failsafe reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
