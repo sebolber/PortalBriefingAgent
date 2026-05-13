@@ -42,8 +42,9 @@ public class HttpChatCompletionClient {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(10));
         factory.setReadTimeout(Duration.ofSeconds(180));
+        String target = chatCompletionsUrl(provider.getEndpointUrl());
         RestClient client = RestClient.builder()
-                .baseUrl(provider.getEndpointUrl())
+                .baseUrl(target)
                 .requestFactory(factory)
                 .build();
 
@@ -73,9 +74,35 @@ public class HttpChatCompletionClient {
                     .body(JsonNode.class);
             return extractText(response);
         } catch (RestClientException ex) {
-            LOG.warn("LLM call to {} failed: {}", provider.getEndpointUrl(), ex.getMessage());
+            LOG.warn("LLM call to {} failed: {}", target, ex.getMessage());
             throw new ApiException(HttpStatus.BAD_GATEWAY, "LLM provider unreachable");
         }
+    }
+
+    /**
+     * Accept both styles operators use in the configuration UI:
+     *
+     * <ul>
+     *   <li>{@code https://host/v1} or {@code https://host/v1/} —
+     *       conventional OpenAI-compatible <em>base URL</em>.</li>
+     *   <li>{@code https://host/v1/chat/completions} — the explicit
+     *       endpoint URL.</li>
+     * </ul>
+     *
+     * When the configured URL does not already end with the
+     * {@code chat/completions} path segment, we append it. This matches
+     * the behaviour of the official OpenAI SDKs and removes a common
+     * misconfiguration pitfall.
+     */
+    static String chatCompletionsUrl(String configured) {
+        if (configured == null || configured.isBlank()) {
+            return configured;
+        }
+        String url = configured.endsWith("/") ? configured.substring(0, configured.length() - 1) : configured;
+        if (url.endsWith("/chat/completions")) {
+            return url;
+        }
+        return url + "/chat/completions";
     }
 
     private String extractText(JsonNode response) {
