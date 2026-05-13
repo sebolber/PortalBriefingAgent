@@ -48,6 +48,8 @@ management:
 briefingagent:
   security:
     bcrypt-strength: 12
+  crypto:
+    secret-key: ${BRIEFINGAGENT_SECRET_KEY:}
   llm:
     mock:
       enabled: true
