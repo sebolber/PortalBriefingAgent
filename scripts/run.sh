@@ -10,7 +10,9 @@
 # resources.
 #
 # The script is idempotent: it leaves existing tools and containers alone
-# and only installs the things that are missing.
+# and only installs the things that are missing. Linux and macOS are
+# both supported; Linux installs go through apt-get (Debian/Ubuntu),
+# macOS installs go through Homebrew.
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -22,6 +24,8 @@ STATIC_TARGET="${BACKEND_DIR}/src/main/resources/static"
 
 REQUIRED_JAVA_MAJOR=21
 REQUIRED_NODE_MAJOR=20
+
+PLATFORM="$(uname -s)"
 
 log() { printf '[run] %s\n' "$*" >&2; }
 fail() { printf '[run] ERROR: %s\n' "$*" >&2; exit 1; }
@@ -55,18 +59,49 @@ is_root() {
   [[ "$(id -u)" -eq 0 ]]
 }
 
-apt_install() {
-  local pkgs=("$@")
-  if command -v apt-get >/dev/null 2>&1; then
+ensure_brew() {
+  if command -v brew >/dev/null 2>&1; then
+    return
+  fi
+  fail "Homebrew not found. Install it from https://brew.sh and re-run this script."
+}
+
+# Cross-platform package install. First argument is the package name on
+# apt-get; subsequent arguments are brew formula/cask hints in the form
+# "formula:<name>" or "cask:<name>". The first brew hint that matches the
+# platform wins.
+pkg_install() {
+  local apt_pkg="$1"; shift
+  if [[ "${PLATFORM}" == "Darwin" ]]; then
+    ensure_brew
+    local hint
+    for hint in "$@"; do
+      case "${hint}" in
+        formula:*)
+          local formula="${hint#formula:}"
+          log "Installing ${formula} via brew…"
+          brew install "${formula}"
+          return
+          ;;
+        cask:*)
+          local cask="${hint#cask:}"
+          log "Installing ${cask} via brew cask…"
+          brew install --cask "${cask}"
+          return
+          ;;
+      esac
+    done
+    fail "No brew hint provided for ${apt_pkg} — please install it manually."
+  elif command -v apt-get >/dev/null 2>&1; then
     if is_root; then
       apt-get update -qq
-      apt-get install -y --no-install-recommends "${pkgs[@]}"
+      apt-get install -y --no-install-recommends "${apt_pkg}"
     else
       sudo apt-get update -qq
-      sudo apt-get install -y --no-install-recommends "${pkgs[@]}"
+      sudo apt-get install -y --no-install-recommends "${apt_pkg}"
     fi
   else
-    fail "apt-get not available and the following packages are missing: ${pkgs[*]}"
+    fail "Unsupported platform (${PLATFORM}). Install ${apt_pkg} manually and re-run."
   fi
 }
 
@@ -81,8 +116,10 @@ ensure_java() {
     fi
   fi
   log "Installing OpenJDK ${REQUIRED_JAVA_MAJOR}…"
-  apt_install "openjdk-${REQUIRED_JAVA_MAJOR}-jdk-headless" || \
-    fail "Could not install OpenJDK ${REQUIRED_JAVA_MAJOR}. Please install it manually."
+  pkg_install "openjdk-${REQUIRED_JAVA_MAJOR}-jdk-headless" "formula:openjdk@${REQUIRED_JAVA_MAJOR}"
+  if [[ "${PLATFORM}" == "Darwin" ]]; then
+    log "On macOS you may need to add openjdk@${REQUIRED_JAVA_MAJOR} to your PATH (brew prints the snippet)."
+  fi
 }
 
 ensure_maven() {
@@ -91,7 +128,7 @@ ensure_maven() {
     return
   fi
   log "Installing Maven…"
-  apt_install maven || fail "Could not install Maven. Please install it manually."
+  pkg_install maven "formula:maven"
 }
 
 ensure_node() {
@@ -105,13 +142,20 @@ ensure_node() {
     fi
     log "Node ${version} is older than v${REQUIRED_NODE_MAJOR} — installing a newer line."
   fi
-  log "Installing Node.js ${REQUIRED_NODE_MAJOR}.x via NodeSource…"
-  if is_root; then
-    curl -fsSL "https://deb.nodesource.com/setup_${REQUIRED_NODE_MAJOR}.x" | bash -
-    apt-get install -y nodejs
+  if [[ "${PLATFORM}" == "Darwin" ]]; then
+    log "Installing Node.js ${REQUIRED_NODE_MAJOR}.x via brew…"
+    ensure_brew
+    brew install "node@${REQUIRED_NODE_MAJOR}"
+    log "Add node@${REQUIRED_NODE_MAJOR} to your PATH if brew prints a hint (it is keg-only)."
   else
-    curl -fsSL "https://deb.nodesource.com/setup_${REQUIRED_NODE_MAJOR}.x" | sudo -E bash -
-    sudo apt-get install -y nodejs
+    log "Installing Node.js ${REQUIRED_NODE_MAJOR}.x via NodeSource…"
+    if is_root; then
+      curl -fsSL "https://deb.nodesource.com/setup_${REQUIRED_NODE_MAJOR}.x" | bash -
+      apt-get install -y nodejs
+    else
+      curl -fsSL "https://deb.nodesource.com/setup_${REQUIRED_NODE_MAJOR}.x" | sudo -E bash -
+      sudo apt-get install -y nodejs
+    fi
   fi
 }
 
@@ -119,10 +163,16 @@ ensure_docker() {
   if command -v docker >/dev/null 2>&1; then
     log "Docker present: $(docker --version)"
   else
+    if [[ "${PLATFORM}" == "Darwin" ]]; then
+      fail "Docker not found. Install Docker Desktop from https://www.docker.com/products/docker-desktop/ and re-run."
+    fi
     log "Installing Docker engine…"
-    apt_install docker.io || fail "Could not install Docker. Please install it manually."
+    pkg_install docker.io || fail "Could not install Docker. Please install it manually."
   fi
   if ! docker info >/dev/null 2>&1; then
+    if [[ "${PLATFORM}" == "Darwin" ]]; then
+      fail "Docker daemon is not running. Start Docker Desktop and re-run."
+    fi
     fail "Docker daemon is not reachable. Start it (e.g. 'sudo systemctl start docker') and re-run."
   fi
 }
@@ -216,6 +266,7 @@ run_backend() {
 }
 
 main() {
+  log "Platform: ${PLATFORM}"
   ensure_java
   ensure_maven
   ensure_node
