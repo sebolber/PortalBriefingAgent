@@ -2,6 +2,7 @@ package app.briefingagent.pipeline;
 
 import app.briefingagent.audience.AudienceRef;
 import app.briefingagent.llm.LlmClient;
+import app.briefingagent.llm.LlmJsonResponses;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
 import app.briefingagent.summary.ClassificationConfidence;
@@ -82,7 +83,7 @@ public class AudienceClassificationService {
         }
         JsonNode root;
         try {
-            root = mapper.readTree(response);
+            root = mapper.readTree(LlmJsonResponses.stripCodeFences(response));
         } catch (Exception ex) {
             LOG.warn("Classifier returned malformed JSON: {}", ex.getMessage());
             return List.of();

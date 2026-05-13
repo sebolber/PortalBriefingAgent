@@ -2,6 +2,7 @@ package app.briefingagent.pipeline;
 
 import app.briefingagent.ereignis.Ereignis;
 import app.briefingagent.llm.LlmClient;
+import app.briefingagent.llm.LlmJsonResponses;
 import app.briefingagent.llm.LlmPurpose;
 import app.briefingagent.llm.LlmRequest;
 import app.briefingagent.person.Person;
@@ -138,7 +139,7 @@ public class TaskExtractionService {
         }
         JsonNode root;
         try {
-            root = mapper.readTree(response);
+            root = mapper.readTree(LlmJsonResponses.stripCodeFences(response));
         } catch (Exception ex) {
             LOG.warn("Task extractor returned malformed JSON: {}", ex.getMessage());
             return List.of();
