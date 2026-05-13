@@ -17,13 +17,17 @@ services:
       timeout: 3s
       retries: 10
 
-  # Local OpenAI-compatible Whisper API for audio capture. CPU image is
-  # used so the dev setup works on any laptop; switch the WHISPER_MODEL
-  # env to a larger checkpoint for better quality once you have GPU
-  # support. Audio is streamed by the backend, the container itself does
-  # not persist anything to disk other than the cached model weights.
+  # Local OpenAI-compatible Whisper API for audio capture. The CPU image
+  # works on any laptop; switch the image tag to `latest-cuda` and set
+  # WHISPER__INFERENCE_DEVICE=cuda for a GPU host. The container caches
+  # model weights into a named volume so repeat starts are fast.
+  #
+  # The project was previously published as
+  # `ghcr.io/fedirz/faster-whisper-server` and renamed to
+  # `speaches-ai/speaches`; the new image keeps the OpenAI-compatible
+  # `/v1/audio/transcriptions` endpoint on port 8000.
   whisper:
-    image: ghcr.io/fedirz/faster-whisper-server:latest-cpu
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
     container_name: briefing-agent-whisper
     restart: unless-stopped
     ports:
@@ -33,12 +37,12 @@ services:
       WHISPER__INFERENCE_DEVICE: cpu
       WHISPER__COMPUTE_TYPE: int8
     volumes:
-      - briefing_agent_whisper_cache:/root/.cache/huggingface
+      - briefing_agent_whisper_cache:/home/ubuntu/.cache/huggingface
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/v1/models || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 30
       start_period: 60s
 
 volumes:
