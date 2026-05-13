@@ -192,8 +192,21 @@ ensure_branch() {
   else
     fail "Branch '${BRANCH}' exists neither locally nor on origin."
   fi
+
+  local before after
+  before="$(git rev-parse HEAD)"
   log "Pulling latest commits on ${BRANCH}…"
-  git pull --ff-only origin "${BRANCH}" || log "(No upstream pull performed; staying on current commit.)"
+  if git pull --ff-only origin "${BRANCH}"; then
+    after="$(git rev-parse HEAD)"
+    if [[ "${before}" != "${after}" ]]; then
+      log "Pulled ${before:0:7} → ${after:0:7}. Re-executing with the fresh code…"
+      export BA_RUN_AFTER_PULL=1
+      exec "${BASH_SOURCE[0]}" "${BRANCH}"
+    fi
+    log "Already at the latest commit (${after:0:7})."
+  else
+    log "(No upstream pull performed; staying on current commit.)"
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -267,11 +280,15 @@ run_backend() {
 
 main() {
   log "Platform: ${PLATFORM}"
+  if [[ "${BA_RUN_AFTER_PULL:-}" == "1" ]]; then
+    log "Continuing after re-exec; skipping the second git pull."
+  else
+    ensure_branch
+  fi
   ensure_java
   ensure_maven
   ensure_node
   ensure_docker
-  ensure_branch
   start_database
   build_frontend
   stage_frontend_bundle
