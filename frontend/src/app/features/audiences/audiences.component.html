@@ -1,0 +1,206 @@
+<section class="audiences">
+  <header class="page-header">
+    <h1>Audiences</h1>
+    <nav class="tabs" aria-label="Audience-Auswahl">
+      <button
+        type="button"
+        [class.active]="activeTab() === 'persons'"
+        (click)="switchTab('persons')"
+      >
+        Personen
+      </button>
+      <button
+        type="button"
+        [class.active]="activeTab() === 'groups'"
+        (click)="switchTab('groups')"
+      >
+        Personengruppen
+      </button>
+      <button
+        type="button"
+        [class.active]="activeTab() === 'topics'"
+        (click)="switchTab('topics')"
+      >
+        Themen
+      </button>
+    </nav>
+  </header>
+
+  @if (notice(); as text) {
+    <p class="notice" role="status">{{ text }}</p>
+  }
+  @if (error(); as text) {
+    <p class="error" role="alert">{{ text }}</p>
+  }
+
+  @if (activeTab() === 'persons') {
+    <div class="grid">
+      <article class="surface-card">
+        <h2>{{ editingPersonId() ? 'Person bearbeiten' : 'Neue Person' }}</h2>
+        <form [formGroup]="personForm" (ngSubmit)="savePerson()" novalidate>
+          <label for="person-name">Name</label>
+          <input id="person-name" class="brand-input" formControlName="fullName" />
+          <label for="person-email">E-Mail</label>
+          <input id="person-email" class="brand-input" formControlName="email" type="email" />
+          <label for="person-role">Rolle</label>
+          <input id="person-role" class="brand-input" formControlName="role" />
+          <label for="person-company">Firma</label>
+          <input id="person-company" class="brand-input" formControlName="company" />
+          <div class="actions">
+            <button type="submit" class="brand-button" [disabled]="busy()">
+              {{ editingPersonId() ? 'Speichern' : 'Anlegen' }}
+            </button>
+            @if (editingPersonId()) {
+              <button type="button" class="secondary" (click)="cancelPersonEdit()">Abbrechen</button>
+            }
+          </div>
+        </form>
+      </article>
+
+      <article class="surface-card">
+        <h2>Personenstamm</h2>
+        @if (persons().length === 0) {
+          <p class="empty">Noch keine Personen erfasst.</p>
+        } @else {
+          <ul class="list">
+            @for (p of persons(); track p.id) {
+              <li class="row">
+                <div>
+                  <strong>{{ p.fullName }}</strong>
+                  @if (p.role || p.company) {
+                    <span class="meta">{{ p.role }}<span *ngIf="p.role && p.company"> · </span>{{ p.company }}</span>
+                  }
+                  @if (p.tombstoned) {
+                    <span class="badge tombstone">tombstoned</span>
+                  }
+                </div>
+                <div class="row-actions">
+                  <button type="button" class="link" (click)="editPerson(p)">Bearbeiten</button>
+                  <button type="button" class="link danger" (click)="deletePerson(p)">Löschen</button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </div>
+  }
+
+  @if (activeTab() === 'groups') {
+    <div class="grid">
+      <article class="surface-card">
+        <h2>{{ editingGroupId() ? 'Personengruppe bearbeiten' : 'Neue Personengruppe' }}</h2>
+        <form [formGroup]="groupForm" (ngSubmit)="saveGroup()" novalidate>
+          <label for="group-name">Name</label>
+          <input id="group-name" class="brand-input" formControlName="name" />
+          <label for="group-persona">Persona-Beschreibung</label>
+          <textarea id="group-persona" class="brand-input" rows="6" formControlName="personaText"></textarea>
+          <label for="group-retention">Retention (Monate, optional)</label>
+          <input id="group-retention" class="brand-input" type="number" min="1" formControlName="summaryRetentionMonths" />
+          <fieldset class="members">
+            <legend>Mitglieder</legend>
+            @for (p of memberOptions(); track p.id) {
+              <label class="member-option">
+                <input
+                  type="checkbox"
+                  [checked]="isMember('group', p.id)"
+                  (change)="toggleMember('group', p.id, $any($event.target).checked)"
+                />
+                {{ p.fullName }}
+              </label>
+            }
+          </fieldset>
+          <div class="actions">
+            <button type="submit" class="brand-button" [disabled]="busy()">
+              {{ editingGroupId() ? 'Speichern' : 'Anlegen' }}
+            </button>
+            @if (editingGroupId()) {
+              <button type="button" class="secondary" (click)="cancelGroupEdit()">Abbrechen</button>
+            }
+          </div>
+        </form>
+      </article>
+
+      <article class="surface-card">
+        <h2>Personengruppen</h2>
+        @if (groups().length === 0) {
+          <p class="empty">Noch keine Personengruppen erfasst.</p>
+        } @else {
+          <ul class="list">
+            @for (g of groups(); track g.id) {
+              <li class="row">
+                <div>
+                  <strong>{{ g.name }}</strong>
+                  <span class="meta">{{ g.memberIds.length }} Mitglieder</span>
+                </div>
+                <div class="row-actions">
+                  <button type="button" class="link" (click)="editGroup(g)">Bearbeiten</button>
+                  <button type="button" class="link danger" (click)="deleteGroup(g)">Löschen</button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </div>
+  }
+
+  @if (activeTab() === 'topics') {
+    <div class="grid">
+      <article class="surface-card">
+        <h2>{{ editingTopicId() ? 'Thema bearbeiten' : 'Neues Thema' }}</h2>
+        <form [formGroup]="topicForm" (ngSubmit)="saveTopic()" novalidate>
+          <label for="topic-name">Name</label>
+          <input id="topic-name" class="brand-input" formControlName="name" />
+          <label for="topic-persona">Persona-Beschreibung</label>
+          <textarea id="topic-persona" class="brand-input" rows="6" formControlName="personaText"></textarea>
+          <label for="topic-retention">Retention (Monate, optional)</label>
+          <input id="topic-retention" class="brand-input" type="number" min="1" formControlName="summaryRetentionMonths" />
+          <fieldset class="members">
+            <legend>Verantwortliche</legend>
+            @for (p of memberOptions(); track p.id) {
+              <label class="member-option">
+                <input
+                  type="checkbox"
+                  [checked]="isMember('topic', p.id)"
+                  (change)="toggleMember('topic', p.id, $any($event.target).checked)"
+                />
+                {{ p.fullName }}
+              </label>
+            }
+          </fieldset>
+          <div class="actions">
+            <button type="submit" class="brand-button" [disabled]="busy()">
+              {{ editingTopicId() ? 'Speichern' : 'Anlegen' }}
+            </button>
+            @if (editingTopicId()) {
+              <button type="button" class="secondary" (click)="cancelTopicEdit()">Abbrechen</button>
+            }
+          </div>
+        </form>
+      </article>
+
+      <article class="surface-card">
+        <h2>Themen</h2>
+        @if (topics().length === 0) {
+          <p class="empty">Noch keine Themen erfasst.</p>
+        } @else {
+          <ul class="list">
+            @for (t of topics(); track t.id) {
+              <li class="row">
+                <div>
+                  <strong>{{ t.name }}</strong>
+                  <span class="meta">{{ t.memberIds.length }} Verantwortliche</span>
+                </div>
+                <div class="row-actions">
+                  <button type="button" class="link" (click)="editTopic(t)">Bearbeiten</button>
+                  <button type="button" class="link danger" (click)="deleteTopic(t)">Löschen</button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </div>
+  }
+</section>

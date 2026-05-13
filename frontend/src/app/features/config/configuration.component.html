@@ -1,0 +1,140 @@
+<section class="configuration">
+  <header class="page-header">
+    <h1>Konfiguration</h1>
+  </header>
+
+  @if (notice(); as text) { <p class="notice" role="status">{{ text }}</p> }
+  @if (error(); as text) { <p class="error" role="alert">{{ text }}</p> }
+
+  <article class="surface-card">
+    <h2>LLM-Provider</h2>
+    <form [formGroup]="llmForm" (ngSubmit)="createLlmProvider()" novalidate class="grid-form">
+      <label>Name<input class="brand-input" formControlName="name" /></label>
+      <label>Endpoint-URL<input class="brand-input" formControlName="endpointUrl" /></label>
+      <label>Modell<input class="brand-input" formControlName="modelName" /></label>
+      <label>API-Key Secret-Ref<input class="brand-input" formControlName="apiKeySecretRef" /></label>
+      <label>API-Type<input class="brand-input" formControlName="apiType" /></label>
+      <button type="submit" class="brand-button" [disabled]="busy()">Anlegen</button>
+    </form>
+
+    @if (llmProviders().length === 0) {
+      <p class="empty">Keine LLM-Provider angelegt.</p>
+    } @else {
+      <ul class="list">
+        @for (p of llmProviders(); track p.id) {
+          <li class="row">
+            <header>
+              <strong>{{ p.name }}</strong>
+              <span class="meta">{{ p.modelName }} · {{ p.endpointUrl }}</span>
+            </header>
+            <div class="purposes">
+              @for (purpose of purposes; track purpose) {
+                <label class="purpose-toggle">
+                  <input
+                    type="checkbox"
+                    [checked]="isPurposeActive(p, purpose)"
+                    (change)="toggleLlmUsage(p, purpose, $any($event.target).checked)"
+                  />
+                  {{ purpose }}
+                </label>
+              }
+            </div>
+            <p class="test-result" [attr.data-state]="p.lastTestResult">
+              @if (p.lastTestResult) {
+                Letzter Test: {{ p.lastTestResult }} — {{ p.lastTestMessage }}
+                <span class="muted">({{ p.lastTestedAt | date: 'medium' }})</span>
+              } @else {
+                Noch nicht getestet.
+              }
+            </p>
+            <div class="row-actions">
+              <button type="button" class="link" (click)="testLlm(p)">Verbindung testen</button>
+              <button type="button" class="link danger" (click)="deleteLlmProvider(p)">Löschen</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+
+  <article class="surface-card">
+    <h2>STT-Provider</h2>
+    <form [formGroup]="sttForm" (ngSubmit)="createSttProvider()" novalidate class="grid-form">
+      <label>Name<input class="brand-input" formControlName="name" /></label>
+      <label>Endpoint-URL<input class="brand-input" formControlName="endpointUrl" /></label>
+      <label>Modell<input class="brand-input" formControlName="modelName" /></label>
+      <label>API-Key Secret-Ref<input class="brand-input" formControlName="apiKeySecretRef" /></label>
+      <button type="submit" class="brand-button" [disabled]="busy()">Anlegen</button>
+    </form>
+
+    @if (sttProviders().length === 0) {
+      <p class="empty">Keine STT-Provider angelegt.</p>
+    } @else {
+      <ul class="list">
+        @for (p of sttProviders(); track p.id) {
+          <li class="row">
+            <header>
+              <strong>{{ p.name }}</strong>
+              <span class="meta">{{ p.modelName }} · {{ p.endpointUrl }}</span>
+              @if (p.active) { <span class="badge">aktiv</span> }
+            </header>
+            <p class="test-result" [attr.data-state]="p.lastTestResult">
+              @if (p.lastTestResult) {
+                Letzter Test: {{ p.lastTestResult }} — {{ p.lastTestMessage }}
+              } @else {
+                Noch nicht getestet.
+              }
+            </p>
+            <div class="row-actions">
+              <button type="button" class="link" (click)="toggleSttActivation(p)">
+                {{ p.active ? 'Deaktivieren' : 'Aktivieren' }}
+              </button>
+              <button type="button" class="link" (click)="testStt(p)">Testen</button>
+              <button type="button" class="link danger" (click)="deleteSttProvider(p)">Löschen</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+
+  <article class="surface-card">
+    <h2>Prompt-Templates</h2>
+    <form [formGroup]="promptForm" (ngSubmit)="savePromptTemplate()" novalidate class="grid-form">
+      <label>Zweck
+        <select class="brand-input" formControlName="purpose">
+          @for (purpose of purposes; track purpose) {
+            <option [value]="purpose">{{ purpose }}</option>
+          }
+        </select>
+      </label>
+      <label>Inhalt
+        <textarea class="brand-input" rows="8" formControlName="content"></textarea>
+      </label>
+      <p class="hint">Pflicht-Platzhalter siehe Backend (z.B. {{ '{{transcript}}' }}). Beim Speichern entsteht eine neue Version.</p>
+      <button type="submit" class="brand-button" [disabled]="busy()">Neue Version speichern</button>
+    </form>
+
+    @if (templates().length === 0) {
+      <p class="empty">Noch keine Prompt-Templates.</p>
+    } @else {
+      <ul class="list">
+        @for (t of templates(); track t.id) {
+          <li class="row">
+            <header>
+              <strong>{{ t.purpose }}</strong>
+              <span class="meta">v{{ t.version }} · {{ t.createdAt | date: 'medium' }}</span>
+              @if (t.active) { <span class="badge">aktiv</span> }
+            </header>
+            <pre class="prompt-preview">{{ t.content }}</pre>
+            @if (!t.active) {
+              <div class="row-actions">
+                <button type="button" class="link" (click)="restoreTemplate(t)">Diese Version aktivieren</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

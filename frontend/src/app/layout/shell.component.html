@@ -1,0 +1,38 @@
+<div class="shell">
+  <header class="topbar">
+    <a routerLink="/dashboard" class="brand">Briefing Agent</a>
+
+    <nav class="primary-nav" aria-label="Hauptnavigation">
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/capture/text" routerLinkActive="active">Text-Notiz</a>
+      <a routerLink="/capture/audio" routerLinkActive="active">Audio-Notiz</a>
+      <a routerLink="/audiences" routerLinkActive="active">Audiences</a>
+      <a routerLink="/tasks" routerLinkActive="active">Aufgaben</a>
+      <a routerLink="/configuration" routerLinkActive="active">Konfiguration</a>
+      <a routerLink="/admin" routerLinkActive="active">Admin</a>
+    </nav>
+
+    <form class="global-search" [formGroup]="searchForm" (submit)="onSearchSubmit($event)">
+      <input
+        #searchInput
+        type="search"
+        class="brand-input"
+        placeholder='Suche · "/" zum Fokussieren'
+        formControlName="q"
+        autocomplete="off"
+        aria-label="Globale Suche"
+      />
+    </form>
+
+    <div class="user-menu">
+      @if (currentUser(); as user) {
+        <span class="user-name" [attr.aria-label]="'Eingeloggt als ' + user.fullName">{{ user.fullName }}</span>
+      }
+      <button type="button" class="brand-button" (click)="logout()">Abmelden</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

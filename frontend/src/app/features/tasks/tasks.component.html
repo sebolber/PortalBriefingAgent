@@ -1,0 +1,58 @@
+<section class="tasks">
+  <header class="page-header">
+    <h1>Aufgaben</h1>
+  </header>
+
+  @if (notice(); as text) { <p class="notice" role="status">{{ text }}</p> }
+  @if (error(); as text) { <p class="error" role="alert">{{ text }}</p> }
+
+  <article class="surface-card create-form">
+    <h2>Neue Aufgabe</h2>
+    <form [formGroup]="form" (ngSubmit)="create()" novalidate>
+      <label for="task-title">Titel</label>
+      <input id="task-title" class="brand-input" formControlName="title" />
+      <label for="task-desc">Beschreibung</label>
+      <textarea id="task-desc" class="brand-input" rows="3" formControlName="description"></textarea>
+      <label for="task-due">Fälligkeit</label>
+      <input id="task-due" class="brand-input" type="date" formControlName="dueDate" />
+      <div class="actions">
+        <button type="submit" class="brand-button" [disabled]="busy()">Anlegen</button>
+      </div>
+    </form>
+  </article>
+
+  <article class="surface-card">
+    <h2>Liste</h2>
+    @if (tasks().length === 0) {
+      <p class="empty">Noch keine Aufgaben.</p>
+    } @else {
+      <ul class="task-list">
+        @for (task of tasks(); track task.id) {
+          <li class="task-row" [attr.data-status]="task.status">
+            <div class="meta">
+              <strong>{{ task.title }}</strong>
+              <span class="status">{{ statusLabel(task.status) }}</span>
+              @if (task.dueDate) {
+                <span class="due">fällig {{ task.dueDate | date: 'shortDate' }}</span>
+              }
+            </div>
+            @if (task.description) {
+              <p class="description">{{ task.description }}</p>
+            }
+            <div class="row-actions">
+              @if (task.status === 'open') {
+                <button type="button" class="link" (click)="setStatus(task, 'in_progress')">In Arbeit</button>
+                <button type="button" class="link" (click)="setStatus(task, 'done')">Erledigt</button>
+                <button type="button" class="link" (click)="setStatus(task, 'dropped')">Verwerfen</button>
+              } @else if (task.status === 'in_progress') {
+                <button type="button" class="link" (click)="setStatus(task, 'done')">Erledigt</button>
+                <button type="button" class="link" (click)="setStatus(task, 'dropped')">Verwerfen</button>
+              }
+              <button type="button" class="link danger" (click)="remove(task)">Löschen</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

@@ -1,0 +1,86 @@
+.admin {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.notice {
+  color: var(--color-status-success);
+  margin: 0;
+}
+
+.error {
+  color: var(--color-status-error);
+  margin: 0;
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-surface-border);
+}
+
+.meta {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin-left: var(--space-xs);
+}
+
+.badge {
+  margin-left: var(--space-xs);
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-border);
+  color: var(--color-text-secondary);
+
+  &[data-state='active'] {
+    background-color: rgba(29, 125, 79, 0.12);
+    color: var(--color-status-success);
+  }
+
+  &[data-state='inactive'],
+  &.tombstoned {
+    background-color: rgba(179, 38, 30, 0.12);
+    color: var(--color-status-error);
+  }
+
+  &.admin {
+    background-color: rgba(0, 110, 199, 0.12);
+    color: var(--color-brand-primary);
+  }
+}
+
+.row-actions {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.link {
+  background: transparent;
+  border: none;
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.link.danger {
+  color: var(--color-status-error);
+}

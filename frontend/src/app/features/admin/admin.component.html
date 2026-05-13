@@ -1,0 +1,64 @@
+<section class="admin">
+  <header class="page-header">
+    <h1>Admin</h1>
+  </header>
+
+  @if (notice(); as text) { <p class="notice" role="status">{{ text }}</p> }
+  @if (error(); as text) { <p class="error" role="alert">{{ text }}</p> }
+
+  <article class="surface-card">
+    <h2>Autoren</h2>
+    @if (users().length === 0) {
+      <p class="empty">Keine Autoren.</p>
+    } @else {
+      <ul class="list">
+        @for (user of users(); track user.id) {
+          <li class="row">
+            <div>
+              <strong>{{ user.username }}</strong>
+              <span class="meta">{{ user.fullName }}</span>
+              <span class="badge" [attr.data-state]="user.status">{{ user.status }}</span>
+              @if (user.admin) { <span class="badge admin">Admin</span> }
+              @if (user.deletionScheduledAt) {
+                <span class="meta">Löschung am {{ user.deletionScheduledAt | date: 'medium' }}</span>
+              }
+            </div>
+            <div class="row-actions">
+              @if (user.status === 'active') {
+                <button type="button" class="link danger" (click)="deactivate(user)">Deaktivieren</button>
+              } @else {
+                <button type="button" class="link" (click)="reactivate(user)">Reaktivieren</button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+
+  <article class="surface-card">
+    <h2>Personen</h2>
+    @if (persons().length === 0) {
+      <p class="empty">Keine Personen.</p>
+    } @else {
+      <ul class="list">
+        @for (p of persons(); track p.id) {
+          <li class="row">
+            <div>
+              <strong>{{ p.displayName }}</strong>
+              @if (p.tombstoned) { <span class="badge tombstoned">tombstoned</span> }
+              @if (p.deletedAt) {
+                <span class="meta">seit {{ p.deletedAt | date: 'medium' }}</span>
+              }
+            </div>
+            <div class="row-actions">
+              @if (!p.tombstoned) {
+                <button type="button" class="link danger" (click)="tombstone(p)">Tombstone</button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

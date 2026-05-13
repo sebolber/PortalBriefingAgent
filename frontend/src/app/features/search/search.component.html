@@ -1,0 +1,37 @@
+<section class="search">
+  <header class="page-header">
+    <h1>Suche</h1>
+  </header>
+
+  <form [formGroup]="form" (submit)="$event.preventDefault()">
+    <input
+      type="search"
+      class="brand-input"
+      placeholder="Anna · Vorstand · Produkt Alpha · Workshop …"
+      formControlName="q"
+      autocomplete="off"
+      #qInput
+    />
+  </form>
+
+  @if (busy()) { <p class="loading" role="status">Suche läuft…</p> }
+  @if (error(); as text) { <p class="error" role="alert">{{ text }}</p> }
+
+  @if (!busy() && query() !== '' && hits().length === 0) {
+    <p class="empty">Keine Treffer für "{{ query() }}".</p>
+  }
+
+  @if (hits().length > 0) {
+    <ul class="hit-list" data-testid="hits">
+      @for (hit of hits(); track hit.id + hit.type) {
+        <li class="hit">
+          <a [routerLink]="hitLink(hit)" class="hit-link">
+            <span class="badge" [attr.data-type]="hit.type">{{ typeLabel(hit.type) }}</span>
+            <strong>{{ hit.label }}</strong>
+            @if (hit.snippet) { <p class="snippet">{{ hit.snippet }}</p> }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

@@ -1,0 +1,131 @@
+.configuration {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.notice {
+  color: var(--color-status-success);
+  margin: 0;
+}
+
+.error {
+  color: var(--color-status-error);
+  margin: 0;
+}
+
+.grid-form {
+  display: grid;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+
+  label {
+    display: grid;
+    gap: var(--space-xxs);
+    font-weight: 600;
+  }
+
+  textarea {
+    resize: vertical;
+    font-family: var(--font-stack-mono);
+  }
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.row {
+  border-top: 1px solid var(--color-surface-border);
+  padding-top: var(--space-sm);
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+
+  .meta {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    background: rgba(29, 125, 79, 0.12);
+    color: var(--color-status-success);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+  }
+}
+
+.purposes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0;
+}
+
+.purpose-toggle {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  font-weight: normal;
+}
+
+.test-result {
+  margin: var(--space-xs) 0;
+  font-size: 0.875rem;
+
+  &[data-state='success'] { color: var(--color-status-success); }
+  &[data-state='failed'] { color: var(--color-status-error); }
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+
+  .link {
+    background: transparent;
+    border: none;
+    color: var(--color-brand-primary);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .link.danger {
+    color: var(--color-status-error);
+  }
+}
+
+.prompt-preview {
+  background-color: var(--color-surface-muted);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-stack-mono);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}

@@ -1,0 +1,125 @@
+<section class="review">
+  <header class="page-header">
+    <h1>Review</h1>
+    <a routerLink="/dashboard" class="back-link">Zurück zum Dashboard</a>
+  </header>
+
+  @if (notice(); as text) {
+    <p class="notice" role="status">{{ text }}</p>
+  }
+  @if (globalError(); as text) {
+    <p class="error" role="alert">{{ text }}</p>
+  }
+
+  @let detail = ereignis();
+  @if (detail) {
+    <article class="surface-card transcript-section">
+      <header class="section-header">
+        <h2>Transkript</h2>
+        <span class="status">{{ detail.reviewStatus }}</span>
+      </header>
+      @if (transcriptEditing()) {
+        <form [formGroup]="transcriptForm" (ngSubmit)="saveTranscript()">
+          <textarea formControlName="transcript" class="brand-input transcript-area" rows="10"></textarea>
+          <div class="actions">
+            <button type="submit" class="brand-button" [disabled]="transcriptSaving()">Speichern</button>
+            <button type="button" class="secondary" (click)="cancelTranscriptEdit()">Abbrechen</button>
+          </div>
+        </form>
+      } @else {
+        <p class="transcript">{{ detail.transcript }}</p>
+        <div class="actions">
+          @if (detail.reviewStatus !== 'released') {
+            <button type="button" class="link" (click)="startTranscriptEdit()">Transkript bearbeiten</button>
+            <button type="button" class="brand-button" (click)="release()">Freigeben</button>
+          } @else {
+            <span class="info">Freigegeben — Transkript ist read-only.</span>
+          }
+        </div>
+      }
+    </article>
+
+    <h2 class="section-title">Summaries</h2>
+    @if (summaryStates().length === 0) {
+      <p class="empty">Keine Summaries für dieses Ereignis.</p>
+    } @else {
+      <ul class="summary-list">
+        @for (state of summaryStates(); track state.detail.id) {
+          <li class="surface-card summary-card">
+            <header class="summary-header">
+              <span class="audience-type">{{ state.detail.audienceType }}</span>
+              <span class="state" [attr.data-state]="state.detail.editState">{{ state.detail.editState }}</span>
+              @if (state.detail.acceptedAt) {
+                <span class="state accepted">akzeptiert</span>
+              }
+            </header>
+
+            @if (state.editing) {
+              <textarea
+                class="brand-input summary-area"
+                rows="10"
+                [value]="state.draftText"
+                (input)="updateDraft(state, $any($event.target).value)"
+              ></textarea>
+            } @else {
+              <div class="summary-text" [innerHTML]="renderMarkdown(state.detail.summaryText)"></div>
+            }
+
+            @if (state.error) {
+              <p class="error">{{ state.error }}</p>
+            }
+
+            @if (state.showFeedback) {
+              <div class="feedback">
+                <label [for]="'feedback-' + state.detail.id">Feedback an die KI</label>
+                <textarea
+                  [id]="'feedback-' + state.detail.id"
+                  class="brand-input"
+                  rows="3"
+                  [value]="state.feedback"
+                  (input)="updateFeedback(state, $any($event.target).value)"
+                ></textarea>
+                <div class="actions">
+                  <button type="button" class="brand-button" (click)="regenerate(state)" [disabled]="state.saving">Neu generieren</button>
+                  <button type="button" class="secondary" (click)="toggleFeedback(state)">Abbrechen</button>
+                </div>
+              </div>
+            }
+
+            <div class="actions">
+              @if (state.detail.acceptedAt) {
+                <span class="info">Akzeptiert am {{ state.detail.acceptedAt | date: 'medium' }}.</span>
+              } @else if (state.editing) {
+                <button type="button" class="brand-button" (click)="saveSummaryEdit(state)" [disabled]="state.saving">Speichern</button>
+                <button type="button" class="secondary" (click)="cancelSummaryEdit(state)">Abbrechen</button>
+              } @else {
+                <button type="button" class="link" (click)="startSummaryEdit(state)">Bearbeiten</button>
+                <button type="button" class="link" (click)="toggleFeedback(state)">Mit Feedback neu generieren</button>
+                <button type="button" class="brand-button" (click)="accept(state)" [disabled]="state.saving">Akzeptieren</button>
+              }
+            </div>
+
+            @if (state.detail.history.length > 0) {
+              <details class="history">
+                <summary>Audit-Trail ({{ state.detail.history.length }} Einträge)</summary>
+                <ol>
+                  @for (entry of state.detail.history; track entry.changedAt) {
+                    <li>
+                      <strong>{{ entry.changeType === 'manual_edit' ? 'Manueller Edit' : 'Regeneriert' }}</strong>
+                      · {{ entry.changedAt | date: 'medium' }}
+                      @if (entry.feedback) {
+                        <em>· Feedback: "{{ entry.feedback }}"</em>
+                      }
+                    </li>
+                  }
+                </ol>
+              </details>
+            }
+          </li>
+        }
+      </ul>
+    }
+  } @else if (!globalError()) {
+    <p class="loading">Lade Ereignis…</p>
+  }
+</section>

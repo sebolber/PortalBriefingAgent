@@ -1,0 +1,74 @@
+.search {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+form input {
+  width: 100%;
+  font-size: 1.125rem;
+  padding: var(--space-sm);
+}
+
+.loading,
+.empty {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.error {
+  color: var(--color-status-error);
+  margin: 0;
+}
+
+.hit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.hit-link {
+  display: block;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-primary);
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-brand-primary);
+    text-decoration: none;
+  }
+}
+
+.snippet {
+  margin: var(--space-xs) 0 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.badge {
+  display: inline-block;
+  margin-right: var(--space-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-border);
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+
+  &[data-type='person'] { background-color: rgba(0, 110, 199, 0.12); color: var(--color-brand-primary); }
+  &[data-type='persongroup'] { background-color: rgba(245, 166, 35, 0.18); color: var(--color-status-warning); }
+  &[data-type='topic'] { background-color: rgba(29, 125, 79, 0.12); color: var(--color-status-success); }
+  &[data-type='ereignis'],
+  &[data-type='summary'] {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-secondary);
+  }
+}
