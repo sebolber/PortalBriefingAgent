@@ -16,16 +16,25 @@ public class SttProviderProperties {
     @NotBlank
     private String endpointUrl = "http://localhost:9000/v1/audio/transcriptions";
 
-    /** Whisper model identifier used by the configured backend. */
+    /**
+     * Whisper / faster-whisper model identifier sent as the {@code model}
+     * field of the multipart upload. For the bundled speaches container
+     * this must be a valid Hugging Face Hub identifier — the server
+     * downloads it on demand the first time it is requested.
+     */
     @NotBlank
-    private String modelName = "whisper-large-v3";
+    private String modelName = "Systran/faster-whisper-small";
 
     /** Bearer token; empty for self-hosted Whisper that does not require auth. */
     private String apiKey = "";
 
-    /** HTTP read timeout for the upstream call (seconds). */
+    /**
+     * HTTP read timeout for the upstream call (seconds). The default is
+     * generous so the very first request — which triggers a model
+     * download of several hundred megabytes — has room to finish.
+     */
     @Min(5)
-    private int timeoutSeconds = 90;
+    private int timeoutSeconds = 300;
 
     public String getEndpointUrl() {
         return endpointUrl;
