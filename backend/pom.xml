@@ -25,6 +25,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <testcontainers.version>1.20.3</testcontainers.version>
         <wiremock.version>3.9.2</wiremock.version>
+
+        <sonar.organization>sebolber</sonar.organization>
+        <sonar.projectKey>sebolber_PortalBriefingAgent</sonar.projectKey>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>
