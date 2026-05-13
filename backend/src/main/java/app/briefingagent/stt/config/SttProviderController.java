@@ -1,6 +1,7 @@
 package app.briefingagent.stt.config;
 
 import app.briefingagent.common.ApiException;
+import app.briefingagent.crypto.SecretCipher;
 import app.briefingagent.llm.config.ProviderConnectionTester;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -27,9 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class SttProviderController {
 
     private final SttProviderRepository repository;
+    private final SecretCipher secretCipher;
 
-    public SttProviderController(SttProviderRepository repository) {
+    public SttProviderController(SttProviderRepository repository, SecretCipher secretCipher) {
         this.repository = repository;
+        this.secretCipher = secretCipher;
     }
 
     @GetMapping
@@ -41,6 +44,7 @@ public class SttProviderController {
     public ResponseEntity<View> create(@Valid @RequestBody Request body) {
         SttProvider p = new SttProvider(body.name(), body.endpointUrl(), body.modelName());
         p.setApiKeySecretRef(body.apiKeySecretRef());
+        applyApiKey(p, body);
         SttProvider saved = repository.save(p);
         return ResponseEntity.status(HttpStatus.CREATED).body(View.from(saved));
     }
@@ -52,7 +56,18 @@ public class SttProviderController {
         p.setEndpointUrl(body.endpointUrl());
         p.setModelName(body.modelName());
         p.setApiKeySecretRef(body.apiKeySecretRef());
+        applyApiKey(p, body);
         return View.from(repository.save(p));
+    }
+
+    private void applyApiKey(SttProvider provider, Request body) {
+        if (Boolean.TRUE.equals(body.clearApiKey())) {
+            provider.setApiKeyEncrypted(null);
+            return;
+        }
+        if (body.apiKey() != null && !body.apiKey().isBlank()) {
+            provider.setApiKeyEncrypted(secretCipher.encrypt(body.apiKey()));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -106,19 +121,22 @@ public class SttProviderController {
             @NotBlank @Size(max = 200) String name,
             @NotBlank @Size(max = 500) String endpointUrl,
             @NotBlank @Size(max = 200) String modelName,
-            @Size(max = 200) String apiKeySecretRef) {
+            @Size(max = 200) String apiKeySecretRef,
+            @Size(max = 4_000) String apiKey,
+            Boolean clearApiKey) {
     }
 
     public record ActivationRequest(boolean active) {
     }
 
     public record View(String id, String name, String endpointUrl, String modelName,
-                       String apiKeySecretRef, boolean active,
+                       String apiKeySecretRef, boolean apiKeySet, boolean active,
                        String lastTestResult, String lastTestMessage, Instant lastTestedAt) {
 
         public static View from(SttProvider p) {
+            boolean keySet = p.getApiKeyEncrypted() != null && !p.getApiKeyEncrypted().isBlank();
             return new View(p.getId().toString(), p.getName(), p.getEndpointUrl(), p.getModelName(),
-                    p.getApiKeySecretRef(), p.isActive(),
+                    p.getApiKeySecretRef(), keySet, p.isActive(),
                     p.getLastTestResult(), p.getLastTestMessage(), p.getLastTestedAt());
         }
     }

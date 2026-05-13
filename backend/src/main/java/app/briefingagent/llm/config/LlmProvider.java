@@ -24,6 +24,15 @@ public class LlmProvider extends BaseEntity {
     @Column(name = "api_key_secret_ref", length = 200)
     private String apiKeySecretRef;
 
+    /**
+     * Base64-encoded AES-256-GCM envelope ({@code nonce || ciphertext})
+     * produced by {@code SecretCipher}. Never holds the plaintext key.
+     * When present this column takes precedence over
+     * {@link #apiKeySecretRef}.
+     */
+    @Column(name = "api_key_encrypted", columnDefinition = "text")
+    private String apiKeyEncrypted;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "parameters", columnDefinition = "jsonb")
     private java.util.Map<String, Object> parameters;
@@ -79,6 +88,14 @@ public class LlmProvider extends BaseEntity {
 
     public void setApiKeySecretRef(String apiKeySecretRef) {
         this.apiKeySecretRef = apiKeySecretRef;
+    }
+
+    public String getApiKeyEncrypted() {
+        return apiKeyEncrypted;
+    }
+
+    public void setApiKeyEncrypted(String apiKeyEncrypted) {
+        this.apiKeyEncrypted = apiKeyEncrypted;
     }
 
     public java.util.Map<String, Object> getParameters() {

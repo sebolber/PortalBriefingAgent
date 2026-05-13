@@ -1,6 +1,7 @@
 package app.briefingagent.llm.config;
 
 import app.briefingagent.common.ApiException;
+import app.briefingagent.crypto.SecretCipher;
 import app.briefingagent.llm.LlmPurpose;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -28,11 +29,14 @@ public class LlmProviderController {
 
     private final LlmProviderRepository providerRepository;
     private final LlmProviderUsageRepository usageRepository;
+    private final SecretCipher secretCipher;
 
     public LlmProviderController(LlmProviderRepository providerRepository,
-                                 LlmProviderUsageRepository usageRepository) {
+                                 LlmProviderUsageRepository usageRepository,
+                                 SecretCipher secretCipher) {
         this.providerRepository = providerRepository;
         this.usageRepository = usageRepository;
+        this.secretCipher = secretCipher;
     }
 
     @GetMapping
@@ -47,6 +51,7 @@ public class LlmProviderController {
         LlmProvider p = new LlmProvider(body.name(), body.endpointUrl(), body.modelName());
         p.setApiKeySecretRef(body.apiKeySecretRef());
         p.setApiType(body.apiType() == null ? "openai_compatible" : body.apiType());
+        applyApiKey(p, body);
         LlmProvider saved = providerRepository.save(p);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(View.from(saved, List.of()));
@@ -62,7 +67,19 @@ public class LlmProviderController {
         if (body.apiType() != null) {
             p.setApiType(body.apiType());
         }
+        applyApiKey(p, body);
         return View.from(providerRepository.save(p), usageRepository.findByProvider(p));
+    }
+
+    private void applyApiKey(LlmProvider provider, Request body) {
+        if (Boolean.TRUE.equals(body.clearApiKey())) {
+            provider.setApiKeyEncrypted(null);
+            return;
+        }
+        if (body.apiKey() != null && !body.apiKey().isBlank()) {
+            provider.setApiKeyEncrypted(secretCipher.encrypt(body.apiKey()));
+        }
+        // No apiKey change requested → leave whatever was previously stored.
     }
 
     @DeleteMapping("/{id}")
@@ -131,6 +148,8 @@ public class LlmProviderController {
             @NotBlank @Size(max = 500) String endpointUrl,
             @NotBlank @Size(max = 200) String modelName,
             @Size(max = 200) String apiKeySecretRef,
+            @Size(max = 4_000) String apiKey,
+            Boolean clearApiKey,
             @Size(max = 50) String apiType) {
     }
 
@@ -139,13 +158,14 @@ public class LlmProviderController {
 
     public record View(
             String id, String name, String endpointUrl, String modelName,
-            String apiKeySecretRef, String apiType,
+            String apiKeySecretRef, boolean apiKeySet, String apiType,
             String lastTestResult, String lastTestMessage, Instant lastTestedAt,
             List<UsageView> usages) {
 
         public static View from(LlmProvider p, List<LlmProviderUsage> usages) {
+            boolean keySet = p.getApiKeyEncrypted() != null && !p.getApiKeyEncrypted().isBlank();
             return new View(p.getId().toString(), p.getName(), p.getEndpointUrl(), p.getModelName(),
-                    p.getApiKeySecretRef(), p.getApiType(),
+                    p.getApiKeySecretRef(), keySet, p.getApiType(),
                     p.getLastTestResult(), p.getLastTestMessage(), p.getLastTestedAt(),
                     usages.stream().map(UsageView::from).toList());
         }

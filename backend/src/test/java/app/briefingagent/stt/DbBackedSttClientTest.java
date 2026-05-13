@@ -29,6 +29,7 @@ class DbBackedSttClientTest {
 
     @Mock SttProviderRepository repository;
     @Mock SecretStore secretStore;
+    @Mock app.briefingagent.crypto.SecretCipher secretCipher;
     @Mock WhisperSttClient fallback;
 
     DbBackedSttClient client;
@@ -38,7 +39,7 @@ class DbBackedSttClientTest {
     void startWireMock() {
         wireMock = new WireMockServer(WireMockConfiguration.options().dynamicPort());
         wireMock.start();
-        client = new DbBackedSttClient(repository, secretStore, fallback);
+        client = new DbBackedSttClient(repository, secretStore, secretCipher, fallback);
     }
 
     @AfterEach

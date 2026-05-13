@@ -24,13 +24,14 @@ class DbBackedLlmClientTest {
     @Mock LlmProviderUsageRepository usageRepository;
     @Mock HttpChatCompletionClient httpClient;
     @Mock SecretStore secretStore;
+    @Mock app.briefingagent.crypto.SecretCipher secretCipher;
     @Mock MockLlmClient fallback;
 
     DbBackedLlmClient client;
 
     @BeforeEach
     void setUp() {
-        client = new DbBackedLlmClient(usageRepository, httpClient, secretStore, fallback);
+        client = new DbBackedLlmClient(usageRepository, httpClient, secretStore, secretCipher, fallback);
     }
 
     @Test
@@ -62,5 +63,23 @@ class DbBackedLlmClientTest {
 
         assertThat(body).isEqualTo("http body");
         verify(fallback, never()).complete(any());
+    }
+
+    @Test
+    void encrypted_api_key_takes_precedence_over_env_var_path() {
+        LlmProvider provider = TestEntities.withRandomId(
+                new LlmProvider("OnPrem", "http://stub/v1/chat/completions", "model"));
+        provider.setApiKeySecretRef("IGNORED_FALLBACK");
+        provider.setApiKeyEncrypted("base64-envelope");
+        LlmProviderUsage usage = new LlmProviderUsage(provider, LlmPurpose.SUMMARY_GENERATION, true);
+        when(usageRepository.findByPurposeAndActiveTrue(LlmPurpose.SUMMARY_GENERATION))
+                .thenReturn(Optional.of(usage));
+        when(secretCipher.decrypt("base64-envelope")).thenReturn("plain-key");
+        when(httpClient.complete(eq(provider), eq("plain-key"), any(LlmRequest.class)))
+                .thenReturn("ok");
+
+        client.complete(new LlmRequest(LlmPurpose.SUMMARY_GENERATION, "sys", "user"));
+
+        verify(secretStore, never()).resolve(any());
     }
 }

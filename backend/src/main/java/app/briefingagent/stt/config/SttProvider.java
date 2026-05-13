@@ -25,6 +25,14 @@ public class SttProvider extends BaseEntity {
     @Column(name = "api_key_secret_ref", length = 200)
     private String apiKeySecretRef;
 
+    /**
+     * Base64-encoded AES-256-GCM envelope ({@code nonce || ciphertext})
+     * produced by {@code SecretCipher}. Never holds the plaintext key.
+     * Takes precedence over {@link #apiKeySecretRef} when set.
+     */
+    @Column(name = "api_key_encrypted", columnDefinition = "text")
+    private String apiKeyEncrypted;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "parameters", columnDefinition = "jsonb")
     private Map<String, Object> parameters;
@@ -80,6 +88,14 @@ public class SttProvider extends BaseEntity {
 
     public void setApiKeySecretRef(String apiKeySecretRef) {
         this.apiKeySecretRef = apiKeySecretRef;
+    }
+
+    public String getApiKeyEncrypted() {
+        return apiKeyEncrypted;
+    }
+
+    public void setApiKeyEncrypted(String apiKeyEncrypted) {
+        this.apiKeyEncrypted = apiKeyEncrypted;
     }
 
     public Map<String, Object> getParameters() {

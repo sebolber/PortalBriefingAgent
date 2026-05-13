@@ -1,6 +1,7 @@
 package app.briefingagent.stt;
 
 import app.briefingagent.common.ApiException;
+import app.briefingagent.crypto.SecretCipher;
 import app.briefingagent.llm.SecretStore;
 import app.briefingagent.stt.config.SttProvider;
 import app.briefingagent.stt.config.SttProviderRepository;
@@ -40,13 +41,16 @@ public class DbBackedSttClient implements SttProviderClient {
 
     private final SttProviderRepository repository;
     private final SecretStore secretStore;
+    private final SecretCipher secretCipher;
     private final WhisperSttClient fallback;
 
     public DbBackedSttClient(SttProviderRepository repository,
                              SecretStore secretStore,
+                             SecretCipher secretCipher,
                              WhisperSttClient fallback) {
         this.repository = repository;
         this.secretStore = secretStore;
+        this.secretCipher = secretCipher;
         this.fallback = fallback;
     }
 
@@ -59,8 +63,15 @@ public class DbBackedSttClient implements SttProviderClient {
             return fallback.transcribe(audio, contentType, filename);
         }
         SttProvider provider = active.get();
-        String apiKey = secretStore.resolve(provider.getApiKeySecretRef());
-        return callProvider(provider, apiKey, audio, contentType, filename);
+        return callProvider(provider, resolveApiKey(provider), audio, contentType, filename);
+    }
+
+    private String resolveApiKey(SttProvider provider) {
+        String encrypted = provider.getApiKeyEncrypted();
+        if (encrypted != null && !encrypted.isBlank()) {
+            return secretCipher.decrypt(encrypted);
+        }
+        return secretStore.resolve(provider.getApiKeySecretRef());
     }
 
     private TranscriptionResult callProvider(SttProvider provider, String apiKey,

@@ -15,6 +15,7 @@ export interface LlmProviderView {
   readonly endpointUrl: string;
   readonly modelName: string;
   readonly apiKeySecretRef: string | null;
+  readonly apiKeySet: boolean;
   readonly apiType: string;
   readonly lastTestResult: 'success' | 'failed' | null;
   readonly lastTestMessage: string | null;
@@ -27,6 +28,8 @@ export interface LlmProviderRequest {
   endpointUrl: string;
   modelName: string;
   apiKeySecretRef: string | null;
+  apiKey: string | null;
+  clearApiKey?: boolean;
   apiType: string | null;
 }
 
@@ -36,6 +39,7 @@ export interface SttProviderView {
   readonly endpointUrl: string;
   readonly modelName: string;
   readonly apiKeySecretRef: string | null;
+  readonly apiKeySet: boolean;
   readonly active: boolean;
   readonly lastTestResult: 'success' | 'failed' | null;
   readonly lastTestMessage: string | null;
@@ -47,6 +51,8 @@ export interface SttProviderRequest {
   endpointUrl: string;
   modelName: string;
   apiKeySecretRef: string | null;
+  apiKey: string | null;
+  clearApiKey?: boolean;
 }
 
 export interface PromptTemplateView {
