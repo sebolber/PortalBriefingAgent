@@ -1,19 +1,31 @@
 package app.briefingagent.task;
 
-import app.briefingagent.common.AuditedEntity;
 import app.briefingagent.user.UserAccount;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Append-only audit row for a {@link Task}'s status transitions. The
+ * primary timestamp is {@code changed_at}, which is why this entity does
+ * not extend {@code AuditedEntity}: there is no separate {@code
+ * created_at} in the underlying table.
+ */
 @Entity
 @Table(name = "task_status_history")
-public class TaskStatusHistory extends AuditedEntity {
+public class TaskStatusHistory {
+
+    @Id
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "task_id", nullable = false)
@@ -48,6 +60,20 @@ public class TaskStatusHistory extends AuditedEntity {
         this.changedAt = Instant.now();
     }
 
+    @PrePersist
+    void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        if (changedAt == null) {
+            changedAt = Instant.now();
+        }
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
     public Task getTask() {
         return task;
     }
@@ -70,5 +96,21 @@ public class TaskStatusHistory extends AuditedEntity {
 
     public UUID getChangedByAuthorId() {
         return changedByAuthor.getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TaskStatusHistory other)) {
+            return false;
+        }
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
