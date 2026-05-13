@@ -210,18 +210,22 @@ ensure_branch() {
 }
 
 # ---------------------------------------------------------------------------
-# Database.
+# Database + Whisper.
 # ---------------------------------------------------------------------------
 
-start_database() {
-  log "Starting PostgreSQL via docker compose…"
+compose_cmd() {
   if docker compose version >/dev/null 2>&1; then
-    docker compose -f "${REPO_ROOT}/docker-compose.yml" up -d db
+    docker compose -f "${REPO_ROOT}/docker-compose.yml" "$@"
   elif command -v docker-compose >/dev/null 2>&1; then
-    docker-compose -f "${REPO_ROOT}/docker-compose.yml" up -d db
+    docker-compose -f "${REPO_ROOT}/docker-compose.yml" "$@"
   else
     fail "Neither 'docker compose' nor 'docker-compose' is available."
   fi
+}
+
+start_database() {
+  log "Starting PostgreSQL via docker compose…"
+  compose_cmd up -d db
 
   log "Waiting for the database to accept connections…"
   local attempts=30
@@ -233,6 +237,29 @@ start_database() {
     sleep 2
   done
   log "Database is ready."
+}
+
+start_whisper() {
+  if [[ "${BA_SKIP_WHISPER:-0}" == "1" ]]; then
+    log "BA_SKIP_WHISPER=1 — Whisper container not started (audio capture will fail until you configure an STT provider)."
+    return
+  fi
+
+  log "Starting local Whisper (OpenAI-compatible API on :9000) via docker compose…"
+  compose_cmd up -d whisper
+
+  log "Waiting for Whisper to come up. First start downloads the model and can take several minutes…"
+  local attempts=60
+  until docker exec briefing-agent-whisper curl -fsS http://localhost:8000/health >/dev/null 2>&1; do
+    attempts=$((attempts - 1))
+    if [[ "${attempts}" -le 0 ]]; then
+      log "Whisper did not report healthy within 5 minutes — continuing anyway."
+      log "Re-run later or set BA_SKIP_WHISPER=1 if you do not need audio capture."
+      return
+    fi
+    sleep 5
+  done
+  log "Whisper is ready."
 }
 
 # ---------------------------------------------------------------------------
@@ -290,6 +317,7 @@ main() {
   ensure_node
   ensure_docker
   start_database
+  start_whisper
   build_frontend
   stage_frontend_bundle
   build_backend
