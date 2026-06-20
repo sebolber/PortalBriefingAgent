@@ -1,0 +1,114 @@
+// =====================================================================
+//  Unternehmen Enterprise UI-Kit — Design Tokens (Corporate-Design-konform)
+//  Quelle der Wahrheit für Farbe, Typografie, Spacing, Radien, Schatten.
+//  Stand v1.0 — abgeleitet aus "Enterprise UI-Kit Unternehmen-CD".
+//  Als globales SCSS/CSS-Variablen-Theme einbinden.
+// =====================================================================
+
+:root {
+  /* ---- Brand-Ebene (Whitelabel · kundeneditierbar) ----------------- */
+  --brand-primary:    #006EC7;   // Kunde überschreibt nur diese Ebene; alles andere leitet ab
+  --brand-neutral:    #887D75;
+  --brand-accent:     #28DCAA;
+  --brand-font:       'Fira Sans', system-ui, sans-serif;
+  --brand-font-mono:  'Fira Mono', monospace;
+  --brand-radius:     9px;
+  // Semantik (success/warning/danger) bleibt fix; Kontrast-Guardrail erzwingt AA.
+
+  /* ---- Hausfarben ------------------------------------------------- */
+  --c-primary:        #006EC7;   // Unternehmen-Blau — IMMER 100 %, keine Tints/Abstufungen
+  --c-primary-hover:  #005AA3;   // nur für Hover/aktiv von Primärflächen (dunkler, nicht aufgehellt)
+  --c-primary-press:  #00477E;
+  --c-grau:           #887D75;   // Unternehmen-Grau (Abstufungen erlaubt)
+  --c-grau-60:        #B8B1AC;
+  --c-grau-30:        #DBD8D6;
+  --c-grau-12:        #F1EFEE;
+  --c-tint-blue:      #F2F0EE;   // "blaue" Aktiv-Fläche = warmes Grau (KEIN echtes Blau-Tint)
+  --c-tint-blue-line: #E4E0DC;
+
+  /* ---- Neutral · Text & Icons (warm) ------------------------------ */
+  --c-ink:            #33302C;   // Überschriften
+  --c-ink-strong:     #4A443E;
+  --c-body:           #5E564F;
+  --c-body-soft:      #6E655E;   // Fließtext
+  --c-muted:          #887D75;   // sekundär
+  --c-muted-soft:     #9C9089;
+  --c-icon:           #A99F97;   // Icon-/Placeholder-Grau
+  --c-icon-soft:      #B8AEA6;
+
+  /* ---- Flächen & Linien ------------------------------------------- */
+  --c-surface:        #FFFFFF;
+  --c-surface-sub:    #FBFAF8;   // Karten-Subtle / Zebra
+  --c-surface-2:      #F7F5F3;   // Tabellenkopf, Footer
+  --c-backdrop:       #ECEAE7;   // App-Hintergrund
+  --c-line:           #E8E4E0;   // Standard-Border
+  --c-line-soft:      #EDEAE6;
+  --c-divider:        #F0EDEA;   // Zeilentrenner
+  --c-field-border:   #DCD7D1;   // Eingabefeld-Rand
+
+  /* ---- Status (funktional) ---------------------------------------- */
+  --c-success:        #4F8A00;  --c-success-bg: #EFF7E2;  --c-success-line: #DCEDC0;
+  --c-warning:        #C25E1E;  --c-warning-bg: #FFEFE7;  --c-warning-line: #FBD9C7;
+  --c-danger:         #C53B36;  --c-danger-bg:  #FCEEED;  --c-danger-line:  #F3D5D2;
+  --c-info:           #006EC7;  --c-info-bg:    #F2F0EE;  --c-info-line:    #E4E0DC;
+
+  /* ---- Schmuckfarben · Akzente (Farbwelt, sparsam) ---------------- */
+  --c-accent-green:    #76C800;
+  --c-accent-turquoise:#28DCAA;
+  --c-accent-yellow:   #FFFF00;
+  --c-accent-orange:   #FF9868;
+  --c-accent-pink:     #F566BA;
+  --c-accent-violet:   #461EBE;
+
+  /* ---- Typografie -------------------------------------------------- */
+  --font-ui:          'Fira Sans', system-ui, sans-serif;   // UI, Headlines, Body
+  --font-mono:        'Fira Mono', monospace;               // IDs, Zahlen, Tokens
+  // Hinweis: Klavika ist die Markenschrift (lizenzbeschränkt, nur Group Marketing).
+  // Fira Sans ist die korrekte, frei verfügbare CD-Schrift für digitale Anwendungen.
+
+  // Skala (px / weight)
+  --t-display: 800 28px/1.12 var(--font-ui);   // Cover/Hero
+  --t-h1:      800 20px/1.2  var(--font-ui);   // Seitentitel
+  --t-h2:      700 15px/1.3  var(--font-ui);   // Abschnitt
+  --t-body:    500 13px/1.5  var(--font-ui);   // Fließtext
+  --t-label:   700 11px/1.3  var(--font-ui);   // Label/Overline (uppercase, ls .07em)
+  --t-mono:    500 12px/1.4  var(--font-mono); // IDs/Zahlen
+
+  /* ---- Radien ------------------------------------------------------ */
+  --radius-sm:        7px;    // Tabs-Pill, kleine Chips
+  --radius-md:        9px;    // Buttons, Felder
+  --radius-lg:        12px;   // Karten
+  --radius-xl:        16px;   // Sektions-Container
+  --radius-pill:      20px;   // Status-Badges
+
+  /* ---- Spacing (4px-Raster) --------------------------------------- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+
+  /* ---- Elevation --------------------------------------------------- */
+  --shadow-card:      0 1px 2px rgba(16,24,40,.05);
+  --shadow-raised:    0 1px 2px rgba(16,24,40,.05), 0 8px 24px rgba(16,24,40,.07);
+  --shadow-overlay:   0 12px 32px rgba(16,24,40,.16);
+  --shadow-focus:     0 0 0 3px rgba(0,110,199,.18);
+
+  /* ---- Komponenten-Maße ------------------------------------------- */
+  --ctrl-h-sm:        32px;   // Button/Field small
+  --ctrl-h-md:        40px;   // Button/Field medium (Standard)
+  --ctrl-h-lg:        48px;   // Button large
+  --hit-min:          40px;   // minimale Touch-/Klickfläche
+
+  /* ---- Layout-Raster & Fluchten ----------------------------------- */
+  --grid-cols:        12;     // Basisraster für Formulare/Filter
+  --grid-gutter:      16px;   // durchgängiger Spaltenabstand
+  --form-row-gap:     14px;   // vertikaler Abstand zwischen Feldzeilen
+  --field-h:          40px;   // gemeinsame Feldhöhe (Fluchten/Grundlinie)
+
+  /* ---- App-Shell --------------------------------------------------- */
+  --chrome-mode:      full;   // full | embedded | bare  (steuert Sichtbarkeit der Shell)
+  --shell-sidebar:    248px;
+  --shell-sidebar-sm: 228px;
+  --shell-rail:       64px;   // kollabierte Icon-Rail (< 1100px)
+  --shell-topbar:     56px;
+  --content-max:      1180px;
+  --content-pad:      20px;
+}

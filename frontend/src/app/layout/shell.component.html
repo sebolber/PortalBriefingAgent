@@ -1,22 +1,120 @@
-<div class="shell">
-  <header class="topbar">
-    <a routerLink="/dashboard" class="brand">Briefing Agent</a>
+<a class="skip-link" href="#main-content">Zum Inhalt springen</a>
 
-    <nav class="primary-nav" aria-label="Hauptnavigation">
-      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-      <a routerLink="/capture/text" routerLinkActive="active">Text-Notiz</a>
-      <a routerLink="/capture/audio" routerLinkActive="active">Audio-Notiz</a>
-      <a routerLink="/audiences" routerLinkActive="active">Audiences</a>
-      <a routerLink="/tasks" routerLinkActive="active">Aufgaben</a>
-      <a routerLink="/configuration" routerLinkActive="active">Konfiguration</a>
-      <a routerLink="/admin" routerLinkActive="active">Admin</a>
+<svg class="icon-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="icon-dashboard" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="13.5" y="3.5" width="7" height="4.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="3.5" y="13.5" width="7" height="4.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="13.5" y="11" width="7" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    </symbol>
+    <symbol id="icon-text" viewBox="0 0 24 24">
+      <path d="M6 3.5h8.5L19 8v12.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M14.5 3.5V8H19" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M8 12.5h8M8 15.5h8M8 18.5h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-audio" viewBox="0 0 24 24">
+      <rect x="9" y="3" width="6" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M6 11.5a6 6 0 0 0 12 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M12 17.5v3.5M9 21h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-audiences" viewBox="0 0 24 24">
+      <circle cx="9" cy="9" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M3.5 19.5c.7-3.1 3-4.8 5.5-4.8s4.8 1.7 5.5 4.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="16.5" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M14.5 14.7c.8-.3 1.5-.4 2.2-.4 2 0 3.7 1.3 4.3 3.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-tasks" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M5 6.5l1.5 1.5L8.5 5.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12.5 6.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      <rect x="3.5" y="14.5" width="6" height="6" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M12.5 17.5h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-config" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="2.7" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M12 3.5v2.4M12 18.1v2.4M5.5 12H3.1M20.9 12h-2.4M7.4 7.4 5.7 5.7M18.3 18.3l-1.7-1.7M7.4 16.6 5.7 18.3M18.3 5.7l-1.7 1.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-admin" viewBox="0 0 24 24">
+      <path d="M12 3.5 4.5 6v6c0 4.5 3 7.7 7.5 9 4.5-1.3 7.5-4.5 7.5-9V6L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="m8.5 12 2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-menu" viewBox="0 0 24 24">
+      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="m15 15 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="shell" [class.shell--nav-open]="mobileNavOpen()">
+  <aside
+    class="sidebar"
+    [class.sidebar--open]="mobileNavOpen()"
+    aria-label="Hauptnavigation"
+  >
+    <a routerLink="/dashboard" class="brand" (click)="mobileNavOpen.set(false)">
+      <span class="brand-mark" aria-hidden="true">BA</span>
+      <span class="brand-name">Briefing Agent</span>
+    </a>
+
+    <nav class="nav" aria-label="Primärnavigation">
+      @for (group of navGroups; track group.label) {
+        <div class="nav-group">
+          <div class="nav-group-label">{{ group.label }}</div>
+          <ul class="nav-list">
+            @for (item of group.items; track item.path) {
+              <li>
+                <a
+                  [routerLink]="item.path"
+                  routerLinkActive="nav-item--active"
+                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                  class="nav-item"
+                >
+                  <svg class="nav-icon" aria-hidden="true" focusable="false">
+                    <use [attr.href]="'#' + item.iconId"></use>
+                  </svg>
+                  <span class="nav-label">{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
     </nav>
+  </aside>
+
+  <button
+    type="button"
+    class="mobile-backdrop"
+    [class.mobile-backdrop--visible]="mobileNavOpen()"
+    aria-label="Navigation schließen"
+    (click)="mobileNavOpen.set(false)"
+  ></button>
+
+  <header class="topbar">
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-label="Navigation öffnen"
+      [attr.aria-expanded]="mobileNavOpen()"
+      (click)="toggleMobileNav()"
+    >
+      <svg class="nav-toggle-icon" aria-hidden="true" focusable="false">
+        <use href="#icon-menu"></use>
+      </svg>
+    </button>
 
     <form class="global-search" [formGroup]="searchForm" (submit)="onSearchSubmit($event)">
+      <svg class="global-search-icon" aria-hidden="true" focusable="false">
+        <use href="#icon-search"></use>
+      </svg>
       <input
         #searchInput
         type="search"
-        class="brand-input"
+        class="global-search-input"
         placeholder='Suche · "/" zum Fokussieren'
         formControlName="q"
         autocomplete="off"
@@ -32,7 +130,7 @@
     </div>
   </header>
 
-  <main class="content">
+  <main id="main-content" class="content" tabindex="-1">
     <router-outlet />
   </main>
 </div>
