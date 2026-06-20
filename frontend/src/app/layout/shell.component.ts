@@ -1,9 +1,22 @@
-import { Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { filter } from 'rxjs';
 
 import { AuthService } from '../core/auth/auth.service';
+
+interface NavItem {
+  path: string;
+  label: string;
+  iconId: string;
+  exact?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
 
 @Component({
   selector: 'ba-shell',
@@ -19,8 +32,40 @@ export class ShellComponent {
 
   protected readonly currentUser = this.auth.user;
   protected readonly searchForm = this.fb.nonNullable.group({ q: [''] });
+  protected readonly mobileNavOpen = signal(false);
+
+  protected readonly navGroups: readonly NavGroup[] = [
+    {
+      label: 'Workspace',
+      items: [
+        { path: '/dashboard', label: 'Dashboard', iconId: 'icon-dashboard', exact: true },
+        { path: '/capture/text', label: 'Text-Notiz', iconId: 'icon-text' },
+        { path: '/capture/audio', label: 'Audio-Notiz', iconId: 'icon-audio' },
+      ],
+    },
+    {
+      label: 'Inhalte',
+      items: [
+        { path: '/audiences', label: 'Audiences', iconId: 'icon-audiences' },
+        { path: '/tasks', label: 'Aufgaben', iconId: 'icon-tasks' },
+      ],
+    },
+    {
+      label: 'Einstellungen',
+      items: [
+        { path: '/configuration', label: 'Konfiguration', iconId: 'icon-config' },
+        { path: '/admin', label: 'Admin', iconId: 'icon-admin' },
+      ],
+    },
+  ];
 
   @ViewChild('searchInput') protected searchInput?: ElementRef<HTMLInputElement>;
+
+  constructor() {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(() => this.mobileNavOpen.set(false));
+  }
 
   @HostListener('window:keydown', ['$event'])
   protected onKeydown(event: KeyboardEvent): void {
@@ -30,6 +75,13 @@ export class ShellComponent {
       event.preventDefault();
       this.searchInput?.nativeElement.focus();
     }
+    if (event.key === 'Escape' && this.mobileNavOpen()) {
+      this.mobileNavOpen.set(false);
+    }
+  }
+
+  protected toggleMobileNav(): void {
+    this.mobileNavOpen.update((open) => !open);
   }
 
   protected onSearchSubmit(event: Event): void {
