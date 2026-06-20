@@ -1,42 +1,77 @@
-/* Global styling for the Briefing Agent web frontend.
-   CSS variables are kept under neutral, brand-agnostic names so the same
-   structure can host different corporate palettes without renaming. */
+/* Global stylesheet for the Briefing Agent web frontend.
+   The design tokens live in `styles/tokens.scss` (sourced from the
+   `design_handoff_enterprise_uikit/` reference); this file maps the
+   legacy `--color-*` / `--space-*` aliases onto the new `--c-*` /
+   `--space-N` scale so per-component SCSS keeps working unchanged
+   while components migrate stage-by-stage.
+
+   Brand layer (`--brand-*`) is the only kunden-editierbare Schicht;
+   semantic colours derive from it. See README in the handoff for the
+   contrast guardrail. */
+
+@use './styles/tokens';
 
 :root {
-  --color-brand-primary: #006ec7;
-  --color-brand-primary-contrast: #ffffff;
-  --color-brand-primary-hover: #005ba6;
-  --color-brand-accent: #f5a623;
+  /* Legacy aliases — kept while components migrate to --c-* / --space-N. */
+  --color-brand-primary:           var(--c-primary);
+  --color-brand-primary-contrast:  #ffffff;
+  --color-brand-primary-hover:     var(--c-primary-hover);
+  --color-brand-accent:            var(--c-accent-orange);
 
-  --color-surface: #ffffff;
-  --color-surface-muted: #f3f5f7;
-  --color-surface-border: #d8dde2;
+  --color-surface:                 var(--c-surface);
+  --color-surface-muted:           var(--c-surface-2);
+  --color-surface-border:          var(--c-line);
 
-  --color-text-primary: #1c2126;
-  --color-text-secondary: #5a6470;
-  --color-text-muted: #8a93a0;
+  --color-text-primary:            var(--c-ink);
+  --color-text-secondary:          var(--c-body-soft);
+  --color-text-muted:              var(--c-muted);
 
-  --color-status-success: #1d7d4f;
-  --color-status-warning: #b6711e;
-  --color-status-error: #b3261e;
+  --color-status-success:          var(--c-success);
+  --color-status-warning:          var(--c-warning);
+  --color-status-error:            var(--c-danger);
 
-  --space-xxs: 0.25rem;
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-xxl: 3rem;
+  --space-xxs: var(--space-1);
+  --space-xs:  var(--space-2);
+  --space-sm:  var(--space-3);
+  --space-md:  var(--space-4);
+  --space-lg:  var(--space-6);
+  --space-xl:  var(--space-8);
+  --space-xxl: 48px;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --font-stack-base: var(--font-ui);
+  --font-stack-mono: var(--font-mono);
 
-  --font-stack-base: 'Fira Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-stack-mono: 'Fira Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow-sm: var(--shadow-card);
+  --shadow-md: var(--shadow-raised);
+}
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+/* Dark-Mode-Skeleton — explicit toggle via [data-theme="dark"].
+   prefers-color-scheme wiring follows in a later stage; the explicit
+   attribute always wins. */
+[data-theme="dark"] {
+  --c-primary:        #3B8FE0;
+  --c-primary-hover:  #61A6E8;
+  --c-primary-press:  #1E73C9;
+
+  --c-ink:            #ECE9E5;
+  --c-ink-strong:     #E0DCD7;
+  --c-body:           #C9C2BB;
+  --c-body-soft:      #B6AFA8;
+  --c-muted:          #968D85;
+  --c-muted-soft:     #847A72;
+  --c-icon:           #847A72;
+  --c-icon-soft:      #6B6258;
+
+  --c-surface:        #1F1C1A;
+  --c-surface-sub:    #25221F;
+  --c-surface-2:      #2A2724;
+  --c-backdrop:       #1A1816;
+  --c-line:           #322E2B;
+  --c-line-soft:      #2D2A27;
+  --c-divider:        #2B2825;
+  --c-field-border:   #3A3633;
+  --c-tint-blue:      #2C2924;
+  --c-tint-blue-line: #3A3733;
 }
 
 * {
@@ -48,13 +83,13 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  font-family: var(--font-stack-base);
-  color: var(--color-text-primary);
-  background-color: var(--color-surface-muted);
+  font-family: var(--font-ui);
+  color: var(--c-ink);
+  background-color: var(--c-backdrop);
 }
 
 a {
-  color: var(--color-brand-primary);
+  color: var(--c-primary);
   text-decoration: none;
 
   &:hover {
@@ -73,44 +108,60 @@ select {
   font-family: inherit;
 }
 
+/* Brand utility classes. Stage 3 introduces ButtonComponent /
+   FieldComponent — these stay in place so existing markup (and the
+   Playwright smoke test, which queries `article.surface-card` and
+   the `Anmelden` button) keep working. */
 .brand-button {
-  background-color: var(--color-brand-primary);
-  color: var(--color-brand-primary-contrast);
+  background-color: var(--c-primary);
+  color: #ffffff;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+  height: var(--ctrl-h-md);
   font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover:not(:disabled) {
-    background-color: var(--color-brand-primary-hover);
+    background-color: var(--c-primary-hover);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
   }
 
   &:disabled {
-    background-color: var(--color-text-muted);
+    background-color: var(--c-muted);
     cursor: not-allowed;
   }
 }
 
 .brand-input {
   width: 100%;
-  padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--color-surface-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
+  height: var(--ctrl-h-md);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--c-field-border);
+  border-radius: var(--radius-md);
+  background-color: var(--c-surface);
+  color: var(--c-ink);
 }
 
 .brand-input:focus {
-  outline: 2px solid var(--color-brand-primary);
-  outline-offset: 0;
-  border-color: var(--color-brand-primary);
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: var(--shadow-focus);
 }
 
 .surface-card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-surface-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
 }
 
 .visually-hidden {
